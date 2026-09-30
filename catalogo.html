@@ -73,7 +73,7 @@ function renderTabs(){
  const subs=["Todos",...new Set(PRODUCTS.filter(p=>category==="Todos"||p.categoria===category).map(p=>p.subcategoria).filter(Boolean))];
  document.getElementById("subs").innerHTML=subs.map(s=>`<button class="${s===sub?'active':''}" onclick="setSub('${esc(s)}')">${esc(s)}</button>`).join("");
 }
-function setCat(c){category=c;sub="Todos";render()}
+function setCat(c){category=c;sub="Todos";render();history.replaceState(null,"", "#"+c.toLowerCase())}
 function setSub(s){sub=s;render()}
 function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("'","&#39;").replaceAll('"',"&quot;")}
 function money(v){return Number(String(v).replace(/[^\d.-]/g,""))||0}
@@ -113,6 +113,9 @@ function sendWhatsApp(){
  if(n)msg+=`%0ANombre: ${encodeURIComponent(n)}`; if(ph)msg+=`%0ATeléfono: ${encodeURIComponent(ph)}`; if(c)msg+=`%0AComentario: ${encodeURIComponent(c)}`;
  window.open("https://wa.me/"+WHATSAPP+"?text="+msg,"_blank");
 }
+const hashMap={carros:"Carros",motos:"Motos",bicicletas:"Bicicletas"};
+const initialHash=location.hash.replace("#","").toLowerCase();
+if(hashMap[initialHash]) category=hashMap[initialHash];
 render();
 </script>
 </body>
