@@ -191,8 +191,7 @@ function openCropper(file){
    const img=new Image();
    img.onload=()=>{
      cropImageState={baseScale:1,zoom:1,x:0,y:0,stage:0,nw:img.naturalWidth,nh:img.naturalHeight,img};
-     document.getElementById('cropZoom').value='1';
-     document.getElementById('cropModal').classList.add('open');
+      document.getElementById('cropModal').classList.add('open');
      requestAnimationFrame(()=>{
        const sw=stage.clientWidth,sh=stage.clientHeight;
        if(!sw||!sh||!img.naturalWidth||!img.naturalHeight){reject(new Error('No se pudo preparar el área de recorte'));return;}
