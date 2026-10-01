@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RPC COMERCIALIZADORA | Administración</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#0b0b0b;color:#f3f3f3;font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}
+body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{position:sticky;top:0;z-index:20;background:rgba(11,11,11,.96);border-bottom:1px solid #2c2c2c;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:900;letter-spacing:2px;font-size:19px}.brand span{display:block;font-size:10px;color:#aaa;letter-spacing:3px;margin-top:3px}.btn{border:1px solid #444;background:#181818;color:#fff;border-radius:9px;padding:10px 13px;font-weight:700}.btn.primary{background:#e21b23;border-color:#e21b23}.btn.green{background:#20b958;border-color:#20b958}.btn.danger{background:#5e171b;border-color:#7d2429}.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{background:#141414;border:1px solid #2b2b2b;border-radius:14px;padding:16px;margin:14px 0}.login{max-width:440px;margin:12vh auto}.h1{font-size:27px;margin:0 0 5px}.muted{color:#999;font-size:13px;line-height:1.45}.field{margin:10px 0}.field label{display:block;color:#bbb;font-size:12px;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px;outline:none}.field textarea{min-height:85px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}.msg{padding:10px 12px;border-radius:9px;background:#171717;border:1px solid #333;font-size:13px;margin:10px 0;display:none}.msg.show{display:block}.msg.ok{border-color:#276b40}.msg.err{border-color:#8a3439;color:#ffb8bb}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}.toolbar input{background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px}.stats{display:flex;gap:10px;overflow:auto;padding-bottom:3px}.stat{min-width:115px;background:#171717;border:1px solid #2b2b2b;border-radius:10px;padding:11px}.stat b{display:block;font-size:20px}.stat small{color:#999}.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.product{background:#151515;border:1px solid #2d2d2d;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px}.pname{font-weight:800;line-height:1.3}.meta{font-size:11px;color:#999}.price{font-size:18px;font-weight:900}.badge{display:inline-block;font-size:10px;border-radius:20px;padding:4px 7px;background:#242424;color:#ccc}.badge.ok{background:#123b25;color:#8be0a8}.badge.no{background:#43181b;color:#ffb0b4}.photoPreview{width:100%;height:130px;object-fit:cover;border-radius:9px;background:#222;display:none}.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;display:none;overflow:auto}.modal.open{display:block}.modalBox{max-width:680px;margin:25px auto;background:#121212;border:1px solid #333;border-radius:14px;padding:18px}.modalTop{display:flex;justify-content:space-between;align-items:center;gap:10px}.close{background:none;border:0;color:#fff;font-size:28px}.small{font-size:11px;color:#777}.loading{text-align:center;padding:35px;color:#aaa}.hidden{display:none!important}
+@media(max-width:650px){.row{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.products{grid-template-columns:1fr}.top{padding-left:12px;padding-right:12px}.wrap{padding:12px}.modalBox{margin:0;border-radius:0;min-height:100vh;border-left:0;border-right:0}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">RPC<span>COMERCIALIZADORA</span></div><div id="topActions"></div></header>
+
+<main class="wrap">
+<section id="loginView" class="card login">
+  <h1 class="h1">🔐 Panel de administración</h1>
+  <p class="muted">Acceso exclusivo para administrar el catálogo de RPC COMERCIALIZADORA.</p>
+  <div id="loginMsg" class="msg"></div>
+  <div class="field"><label>Correo</label><input id="loginEmail" type="email" autocomplete="username" placeholder="Tu correo"></div>
+  <div class="field"><label>Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Tu contraseña"></div>
+  <button class="btn primary" style="width:100%" onclick="login()">Entrar</button>
+</section>
+
+<section id="adminView" class="hidden">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+      <div><h1 class="h1">Panel de productos</h1><p class="muted">Agrega, edita, cambia precios, cantidades y disponibilidad desde el teléfono.</p></div>
+      <div class="actions"><button class="btn" onclick="goCatalog()">Ver catálogo</button><button class="btn" onclick="logout()">Cerrar sesión</button></div>
+    </div>
+    <div class="stats" style="margin-top:14px"><div class="stat"><b id="totalStat">0</b><small>Productos</small></div><div class="stat"><b id="availableStat">0</b><small>Disponibles</small></div><div class="stat"><b id="stockStat">0</b><small>Con cantidad</small></div></div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar"><input id="searchAdmin" placeholder="🔎 Buscar por nombre o código" oninput="renderProducts()"><button class="btn" onclick="loadProducts()">↻ Actualizar</button><button class="btn primary" onclick="openProduct()">＋ Agregar</button></div>
+    <div id="mainMsg" class="msg"></div>
+  </div>
+
+  <div id="products" class="products"><div class="loading">Cargando productos…</div></div>
+</section>
+</main>
+
+<div id="modal" class="modal"><div class="modalBox">
+  <div class="modalTop"><div><h2 id="modalTitle" style="margin:0">Agregar producto</h2><div class="small" id="modalId"></div></div><button class="close" onclick="closeProduct()">×</button></div>
+  <div id="formMsg" class="msg"></div>
+  <form onsubmit="saveProduct(event)">
+    <input type="hidden" id="pId">
+    <div class="field"><label>Nombre del producto *</label><input id="pNombre" required></div>
+    <div class="row">
+      <div class="field"><label>Categoría *</label><select id="pCategoria" required><option value="">Seleccionar</option><option>Carros</option><option>Motos</option><option>Bicicletas</option></select></div>
+      <div class="field"><label>Subcategoría *</label><select id="pSubcategoria" required><option value="">Seleccionar</option><option>Mecánica</option><option>Eléctrico</option><option>Accesorios</option><option>Gomas</option></select></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Código</label><input id="pCodigo" placeholder="Ej.: REF-001"></div>
+      <div class="field"><label>Precio de venta (CUP) *</label><input id="pPrecio" type="number" min="0" step="0.01" required></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Cantidad</label><input id="pCantidad" type="number" min="0" step="1" value="0"></div>
+      <div class="field"><label>Disponible</label><select id="pDisponible"><option value="true">Sí</option><option value="false">No</option></select></div>
+    </div>
+    <div class="field"><label>Foto (URL)</label><input id="pFoto" type="url" placeholder="https://..."><img id="photoPreview" class="photoPreview" alt="Vista previa"></div>
+    <div class="field"><label>Descripción</label><textarea id="pDescripcion" placeholder="Descripción breve del producto"></textarea></div>
+    <div class="actions" style="justify-content:flex-end"><button type="button" class="btn" onclick="closeProduct()">Cancelar</button><button class="btn primary" id="saveBtn">Guardar</button></div>
+  </form>
+</div></div>
+
+<script>
+const SUPABASE_URL="https://tzbretuogtmhunfxmake.supabase.co";
+const SUPABASE_KEY="sb_publishable_SFA-Aa1-g7z1Yw14quuYMA_1w9IRYFP";
+const ADMIN_UID="65f9a8f1-2aab-4be2-809c-1d4d430c1261";
+const TABLE="PRODUCTOS";
+const {createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_KEY);
+let products=[];
+
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function money(v){return new Intl.NumberFormat('es-CU',{maximumFractionDigits:2}).format(Number(v||0))+' CUP';}
+function showMsg(id,text,type=''){const el=document.getElementById(id);el.textContent=text;el.className='msg show '+type;}
+function hideMsg(id){const el=document.getElementById(id);el.className='msg';el.textContent='';}
+
+async function init(){
+ const {data:{session}}=await db.auth.getSession();
+ if(session) showAdmin(session.user); else showLogin();
+ db.auth.onAuthStateChange((_event,session)=>{ if(session) showAdmin(session.user); else showLogin(); });
+}
+function showLogin(){document.getElementById('loginView').classList.remove('hidden');document.getElementById('adminView').classList.add('hidden');document.getElementById('topActions').innerHTML='';}
+async function showAdmin(user){
+ if(!user || user.id!==ADMIN_UID){await db.auth.signOut();showMsg('loginMsg','Esta cuenta no tiene permisos de administración.','err');return;}
+ document.getElementById('loginView').classList.add('hidden');document.getElementById('adminView').classList.remove('hidden');
+ document.getElementById('topActions').innerHTML='<span class="small">Administrador</span>';
+ await loadProducts();
+}
+async function login(){
+ hideMsg('loginMsg');const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
+ if(!email||!password){showMsg('loginMsg','Escribe el correo y la contraseña.','err');return;}
+ const {error}=await db.auth.signInWithPassword({email,password});
+ if(error) showMsg('loginMsg','No se pudo iniciar sesión: '+error.message,'err');
+}
+async function logout(){await db.auth.signOut();}
+function goCatalog(){location.href='catalogo.html';}
+
+async function loadProducts(){
+ const box=document.getElementById('products');box.innerHTML='<div class="loading">Cargando productos…</div>';hideMsg('mainMsg');
+ const {data,error}=await db.from(TABLE).select('*').order('id',{ascending:true});
+ if(error){box.innerHTML='';showMsg('mainMsg','No se pudieron cargar los productos: '+error.message,'err');return;}
+ products=data||[];updateStats();renderProducts();
+}
+function updateStats(){document.getElementById('totalStat').textContent=products.length;document.getElementById('availableStat').textContent=products.filter(p=>p.disponible===true).length;document.getElementById('stockStat').textContent=products.filter(p=>Number(p.cantidad||0)>0).length;}
+function renderProducts(){
+ const q=document.getElementById('searchAdmin').value.trim().toLowerCase();
+ const list=products.filter(p=>(!q||String(p.nombre||'').toLowerCase().includes(q)||String(p.codigo||'').toLowerCase().includes(q)));
+ const box=document.getElementById('products');
+ if(!list.length){box.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center;color:#999">No se encontraron productos.</div>';return;}
+ box.innerHTML=list.map(p=>`<article class="product">
+   <div class="meta">#${esc(p.id)} · ${esc(p.categoria||'')} · ${esc(p.subcategoria||'')}</div>
+   <div class="pname">${esc(p.nombre)}</div>
+   <div class="meta">Código: ${esc(p.codigo||'—')}</div>
+   <div class="price">${money(p.precio_cup)}</div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="badge">Cantidad: ${esc(p.cantidad??0)}</span><span class="badge ${p.disponible?'ok':'no'}">${p.disponible?'Disponible':'No disponible'}</span></div>
+   <div class="actions" style="margin-top:auto"><button class="btn" onclick='openProduct(${JSON.stringify(p)})'>Editar</button><button class="btn danger" onclick='deleteProduct(${Number(p.id)})'>Eliminar</button></div>
+ </article>`).join('');
+}
+
+function openProduct(p=null){
+ hideMsg('formMsg');document.getElementById('modal').classList.add('open');
+ document.getElementById('modalTitle').textContent=p?'Editar producto':'Agregar producto';
+ document.getElementById('modalId').textContent=p?'ID '+p.id:'Nuevo producto';
+ document.getElementById('pId').value=p?.id??'';document.getElementById('pNombre').value=p?.nombre??'';document.getElementById('pCategoria').value=p?.categoria??'';document.getElementById('pSubcategoria').value=p?.subcategoria??'';document.getElementById('pCodigo').value=p?.codigo??'';document.getElementById('pPrecio').value=p?.precio_cup??'';document.getElementById('pCantidad').value=p?.cantidad??0;document.getElementById('pDisponible').value=String(p?.disponible??true);document.getElementById('pFoto').value=p?.foto_url??'';document.getElementById('pDescripcion').value=p?.descripcion??'';previewPhoto();
+}
+function closeProduct(){document.getElementById('modal').classList.remove('open');}
+function previewPhoto(){const u=document.getElementById('pFoto').value.trim(),img=document.getElementById('photoPreview');if(u){img.src=u;img.style.display='block';img.onerror=()=>img.style.display='none';}else{img.style.display='none';}}
+document.getElementById('pFoto').addEventListener('input',previewPhoto);
+
+async function saveProduct(e){
+ e.preventDefault();hideMsg('formMsg');const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Guardando…';
+ try{
+  const id=document.getElementById('pId').value;
+  const payload={nombre:document.getElementById('pNombre').value.trim(),categoria:document.getElementById('pCategoria').value,subcategoria:document.getElementById('pSubcategoria').value,codigo:document.getElementById('pCodigo').value.trim()||null,precio_cup:Number(document.getElementById('pPrecio').value),cantidad:Number(document.getElementById('pCantidad').value||0),disponible:document.getElementById('pDisponible').value==='true',foto_url:document.getElementById('pFoto').value.trim()||null,descripcion:document.getElementById('pDescripcion').value.trim()||null};
+  if(id){const {error}=await db.from(TABLE).update(payload).eq('id',id);if(error)throw error;showMsg('mainMsg','Producto actualizado correctamente.','ok');}
+  else{const {data:maxData,error:maxError}=await db.from(TABLE).select('id').order('id',{ascending:false}).limit(1).maybeSingle();if(maxError)throw maxError;payload.id=Number(maxData?.id||0)+1;const {error}=await db.from(TABLE).insert(payload);if(error)throw error;showMsg('mainMsg','Producto agregado correctamente.','ok');}
+  closeProduct();await loadProducts();
+ }catch(err){showMsg('formMsg','No se pudo guardar: '+err.message,'err');}
+ finally{btn.disabled=false;btn.textContent='Guardar';}
+}
+
+async function deleteProduct(id){
+ const p=products.find(x=>Number(x.id)===Number(id));if(!p)return;
+ if(!confirm('¿Eliminar definitivamente “'+p.nombre+'”?\n\nEsta acción no se puede deshacer.'))return;
+ const {error}=await db.from(TABLE).delete().eq('id',id);if(error){showMsg('mainMsg','No se pudo eliminar: '+error.message,'err');return;}showMsg('mainMsg','Producto eliminado.','ok');await loadProducts();
+}
+
+init();
+</script>
+</body>
+</html>
