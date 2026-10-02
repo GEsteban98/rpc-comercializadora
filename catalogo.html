@@ -140,15 +140,12 @@ async function persistOrder(){
  sessionStorage.setItem('rpc_current_order',order);
  const c=loadCustomer();
  const total=cart.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0);
- const orderPayload={numero_orden:order,nombre_cliente:c.name||null,telefono:c.phone||null,comentario:c.note||null,subtotal:total,total:total,estado:'Pendiente'};
- const r=await fetch(SUPABASE_URL+'/rest/v1/ordenes',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(orderPayload)});
+ const details=cart.map(x=>({producto_id:Number(x.id)||null,producto:x.nombre,categoria:x.categoria||null,subcategoria:x.subcategoria||null,codigo:x.codigo||null,cantidad:Number(x.qty),precio_unitario:Number(x.precio||0),subtotal:Number(x.precio||0)*Number(x.qty)}));
+ const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/crear_orden_rpc',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_numero_orden:order,p_nombre_cliente:c.name||'',p_telefono:c.phone||'',p_comentario:c.note||'',p_subtotal:total,p_total:total,p_detalles:details})});
  if(!r.ok){const detail=await r.text();throw new Error('No se pudo crear la orden en Supabase ('+r.status+'). '+detail)}
  const created=await r.json();
- const orderId=created[0]?.id;
+ const orderId=created?.id;
  if(!orderId)throw new Error('Supabase no devolvió el ID de la orden.');
- const details=cart.map(x=>({orden_id:orderId,producto_id:Number(x.id)||null,producto:x.nombre,categoria:x.categoria||null,subcategoria:x.subcategoria||null,codigo:x.codigo||null,cantidad:Number(x.qty),precio_unitario:Number(x.precio||0),subtotal:Number(x.precio||0)*Number(x.qty)}));
- const d=await fetch(SUPABASE_URL+'/rest/v1/detalle_orden',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(details)});
- if(!d.ok){const detail=await d.text();throw new Error('La orden fue creada, pero no se pudo guardar su detalle ('+d.status+'). '+detail)}
  sessionStorage.setItem('rpc_saved_order_id',String(orderId));
  sessionStorage.setItem('rpc_saved_order_number',order);
 }
