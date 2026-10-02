@@ -141,14 +141,14 @@ async function persistOrder(){
  const c=loadCustomer();
  const total=cart.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0);
  const orderPayload={numero_orden:order,nombre_cliente:c.name||null,telefono:c.phone||null,comentario:c.note||null,subtotal:total,total:total,estado:'Pendiente'};
- const r=await fetch(SUPABASE_URL+'/rest/v1/ordenes',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(orderPayload)});
- if(!r.ok)throw new Error('No se pudo crear la orden en Supabase ('+r.status+').');
+ const r=await fetch(SUPABASE_URL+'/rest/v1/ordenes',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(orderPayload)});
+ if(!r.ok){const detail=await r.text();throw new Error('No se pudo crear la orden en Supabase ('+r.status+'). '+detail)}
  const created=await r.json();
  const orderId=created[0]?.id;
  if(!orderId)throw new Error('Supabase no devolvió el ID de la orden.');
  const details=cart.map(x=>({orden_id:orderId,producto_id:Number(x.id)||null,producto:x.nombre,categoria:x.categoria||null,subcategoria:x.subcategoria||null,codigo:x.codigo||null,cantidad:Number(x.qty),precio_unitario:Number(x.precio||0),subtotal:Number(x.precio||0)*Number(x.qty)}));
- const d=await fetch(SUPABASE_URL+'/rest/v1/detalle_orden',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(details)});
- if(!d.ok)throw new Error('La orden fue creada, pero no se pudo guardar su detalle.');
+ const d=await fetch(SUPABASE_URL+'/rest/v1/detalle_orden',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(details)});
+ if(!d.ok){const detail=await d.text();throw new Error('La orden fue creada, pero no se pudo guardar su detalle ('+d.status+'). '+detail)}
  sessionStorage.setItem('rpc_saved_order_id',String(orderId));
  sessionStorage.setItem('rpc_saved_order_number',order);
 }
@@ -159,7 +159,7 @@ function printInvoice(){window.print()}
 function sendWhatsApp(){if(!currentOrderItems.length){alert("No hay una orden pendiente de enviar.");return}saveCustomer();const c=loadCustomer(),order=currentOrderNumber(),items=currentOrderItems;let msg=`Hola, quiero hacer un pedido en RPC COMERCIALIZADORA.%0A%0AORDEN: ${encodeURIComponent(order)}%0A`;items.forEach(x=>{msg+=`• ${encodeURIComponent(x.nombre)} — ${x.qty} ud. — ${encodeURIComponent(fmt(x.precio*x.qty))}%0A`});msg+=`%0A${encodeURIComponent("Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0)))}%0A`;if(c.name)msg+=encodeURIComponent("Nombre: "+c.name)+"%0A";if(c.phone)msg+=encodeURIComponent("Teléfono: "+c.phone)+"%0A";if(c.note)msg+=encodeURIComponent("Comentario: "+c.note)+"%0A";finishCurrentOrder();window.location.href="https://wa.me/"+WHATSAPP+"?text="+msg}
 async function loadProducts(){
  try{
-   const response=await fetch(`${SUPABASE_URL}/rest/v1/PRODUCTOS?select=id,nombre,categoria,subcategoria,codigo,precio_cup,disponible,descripcion,foto_url,cantidad&order=id.asc`,{headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}});
+   const response=await fetch(`${SUPABASE_URL}/rest/v1/PRODUCTOS?select=id,nombre,categoria,subcategoria,codigo,precio_cup,disponible,descripcion,foto_url,cantidad&order=id.asc`,{headers:{"apikey":SUPABASE_KEY}});
    if(!response.ok) throw new Error(`Supabase ${response.status}: ${await response.text()}`);
    const rows=await response.json();
    PRODUCTS=rows.filter(p=>p.disponible!==false).map(p=>({id:p.id,categoria:p.categoria||"",subcategoria:p.subcategoria||"",producto:p.nombre||"",codigo:p.codigo||"",precio:p.precio_cup||0,disponible:p.disponible,foto:p.foto_url||"",descripcion:p.descripcion||"",cantidad:p.cantidad||0}));
