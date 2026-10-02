@@ -37,7 +37,7 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
   </div>
 
   <div class="card">
-    <div class="toolbar"><input id="searchAdmin" placeholder="🔎 Buscar por nombre o código" oninput="renderProducts()"><select id="filterCategoria" onchange="renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las categorías</option><option>Carros</option><option>Motos</option><option>Bicicletas</option></select><select id="filterSubcategoria" onchange="renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las subcategorías</option><option>Mecánica</option><option>Eléctrico</option><option>Accesorios</option><option>Gomas</option></select><button class="btn" onclick="clearFilters()">Limpiar</button><button class="btn" onclick="loadProducts()">↻ Actualizar</button><button class="btn primary" onclick="openProduct()">＋ Agregar</button></div>
+    <div class="toolbar"><input id="searchAdmin" placeholder="🔎 Buscar por nombre o código" oninput="renderProducts()"><select id="filterCategoria" onchange="updateFilterSubcategories();renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las categorías</option><option>Carros</option><option>Motos</option><option>Bicicletas</option><option>Todo en un solo lugar</option></select><select id="filterSubcategoria" onchange="renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las subcategorías</option><option>Mecánica</option><option>Eléctrico</option><option>Accesorios</option><option>Gomas</option></select><button class="btn" onclick="clearFilters()">Limpiar</button><button class="btn" onclick="loadProducts()">↻ Actualizar</button><button class="btn primary" onclick="openProduct()">＋ Agregar</button></div>
     <div id="mainMsg" class="msg"></div>
   </div>
 
@@ -52,7 +52,7 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
     <input type="hidden" id="pId">
     <div class="field"><label>Nombre del producto *</label><input id="pNombre" required></div>
     <div class="row">
-      <div class="field"><label>Categoría *</label><select id="pCategoria" required><option value="">Seleccionar</option><option>Carros</option><option>Motos</option><option>Bicicletas</option></select></div>
+      <div class="field"><label>Categoría *</label><select id="pCategoria" required onchange="updateFormSubcategories()"><option value="">Seleccionar</option><option>Carros</option><option>Motos</option><option>Bicicletas</option><option>Todo en un solo lugar</option></select></div>
       <div class="field"><label>Subcategoría *</label><select id="pSubcategoria" required><option value="">Seleccionar</option><option>Mecánica</option><option>Eléctrico</option><option>Accesorios</option><option>Gomas</option></select></div>
     </div>
     <div class="row">
@@ -127,6 +127,13 @@ async function loadProducts(){
  products=data||[];updateStats();renderProducts();
 }
 function updateStats(){document.getElementById('totalStat').textContent=products.length;document.getElementById('availableStat').textContent=products.filter(p=>p.disponible===true).length;document.getElementById('stockStat').textContent=products.filter(p=>Number(p.cantidad||0)>0).length;}
+const VEHICLE_SUBS=['Mecánica','Eléctrico','Accesorios','Gomas'];
+const STORE_SUBS=['Alimentación','Ferretería','Hogar','Otros'];
+function subOptionsForCategory(cat){return cat==='Todo en un solo lugar'?STORE_SUBS:VEHICLE_SUBS;}
+function setSubOptions(select,items,placeholder,current=''){select.innerHTML='<option value="">'+placeholder+'</option>'+items.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');if(items.includes(current))select.value=current;}
+function updateFilterSubcategories(){const cat=document.getElementById('filterCategoria').value;const select=document.getElementById('filterSubcategoria');const current=select.value;const items=cat?subOptionsForCategory(cat):[...new Set([...VEHICLE_SUBS,...STORE_SUBS])];setSubOptions(select,items,'Todas las subcategorías',current);}
+function updateFormSubcategories(keepValue=''){const cat=document.getElementById('pCategoria').value;const select=document.getElementById('pSubcategoria');const current=keepValue||select.value;setSubOptions(select,subOptionsForCategory(cat),'Seleccionar',current);}
+
 function renderProducts(){
  const q=document.getElementById('searchAdmin').value.trim().toLowerCase();
  const cat=document.getElementById('filterCategoria').value;
@@ -149,7 +156,7 @@ function openProduct(p=null){
  hideMsg('formMsg');document.getElementById('modal').classList.add('open');
  document.getElementById('modalTitle').textContent=p?'Editar producto':'Agregar producto';
  document.getElementById('modalId').textContent=p?'ID '+p.id:'Nuevo producto';
- document.getElementById('pId').value=p?.id??'';document.getElementById('pNombre').value=p?.nombre??'';document.getElementById('pCategoria').value=p?.categoria??'';document.getElementById('pSubcategoria').value=p?.subcategoria??'';document.getElementById('pCodigo').value=p?.codigo??'';document.getElementById('pPrecio').value=p?.precio_cup??'';document.getElementById('pCantidad').value=p?.cantidad??0;document.getElementById('pDisponible').value=String(p?.disponible??true);document.getElementById('pFoto').value=p?.foto_url??'';document.getElementById('pDescripcion').value=p?.descripcion??'';previewPhoto();
+ document.getElementById('pId').value=p?.id??'';document.getElementById('pNombre').value=p?.nombre??'';document.getElementById('pCategoria').value=p?.categoria??'';updateFormSubcategories(p?.subcategoria??'');document.getElementById('pCodigo').value=p?.codigo??'';document.getElementById('pPrecio').value=p?.precio_cup??'';document.getElementById('pCantidad').value=p?.cantidad??0;document.getElementById('pDisponible').value=String(p?.disponible??true);document.getElementById('pFoto').value=p?.foto_url??'';document.getElementById('pDescripcion').value=p?.descripcion??'';previewPhoto();
 }
 function closeProduct(){document.getElementById('modal').classList.remove('open');}
 function previewPhoto(){const u=document.getElementById('pFoto').value.trim(),img=document.getElementById('photoPreview');if(u){img.src=u;img.style.display='block';img.onerror=()=>img.style.display='none';}else if(!selectedPhotoFile){img.style.display='none';}}
@@ -314,7 +321,7 @@ async function applyCrop(){
  document.getElementById('cropModal').classList.remove('open');cropSourceFile=null;if(cropObjectUrl){try{URL.revokeObjectURL(cropObjectUrl);}catch(_){}cropObjectUrl=null;}cropImageState.img=null;showMsg('formMsg','Foto recortada y comprimida. Se subirá al guardar el producto.','ok');
 }
 document.getElementById('pFoto').addEventListener('input',()=>{if(!selectedPhotoFile)previewPhoto();});
-function clearFilters(){document.getElementById('searchAdmin').value='';document.getElementById('filterCategoria').value='';document.getElementById('filterSubcategoria').value='';renderProducts();}
+function clearFilters(){document.getElementById('searchAdmin').value='';document.getElementById('filterCategoria').value='';updateFilterSubcategories();document.getElementById('filterSubcategoria').value='';renderProducts();}
 async function uploadPhoto(file,id){
  const ext=file.type==='image/webp'?'webp':'jpg';
  const path=`productos/${id}-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
@@ -349,6 +356,7 @@ async function deleteProduct(id){
  const {error}=await db.from(TABLE).delete().eq('id',id);if(error){showMsg('mainMsg','No se pudo eliminar: '+error.message,'err');return;}showMsg('mainMsg','Producto eliminado.','ok');await loadProducts();
 }
 
+updateFilterSubcategories();
 init();
 </script>
 </body>
