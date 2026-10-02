@@ -37,7 +37,7 @@ footer{border-top:1px solid #292929;padding:30px 18px;color:#999;text-align:cent
 
 .qty-card{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0}.qty-card button{width:34px;height:34px;border:1px solid #555;background:#202020;color:#fff;border-radius:8px;font-size:20px;font-weight:800}.qty-card span{min-width:28px;text-align:center;font-weight:900}.added{background:#20b958!important}.toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%) translateY(20px);background:#161b20;color:#fff;border:1px solid #343c44;border-radius:12px;padding:11px 15px;z-index:100;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 10px 28px rgba(0,0,0,.35)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.invoice-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:60;overflow:auto;padding:20px}.invoice{width:min(760px,100%);margin:20px auto;background:#fff;color:#17191b;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}.invoice-head{padding:22px 24px;background:#111;color:#fff;display:flex;justify-content:space-between;gap:18px}.invoice-head h2{margin:0 0 5px}.invoice-no{font-weight:900;font-size:18px;color:#ff4a50}.invoice-body{padding:24px}.invoice-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}.invoice-table{width:100%;border-collapse:collapse;font-size:14px}.invoice-table th,.invoice-table td{padding:10px 6px;border-bottom:1px solid #ddd;text-align:left}.invoice-table th:last-child,.invoice-table td:last-child{text-align:right}.invoice-total{text-align:right;font-size:21px;font-weight:900;margin-top:16px}.invoice-note{font-size:12px;color:#666;line-height:1.45;margin-top:18px}.invoice-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.invoice-actions button{flex:1;min-width:180px;border:0;border-radius:10px;padding:13px;font-weight:900;cursor:pointer}.btn-green{background:#20b958;color:#fff}.btn-dark{background:#222;color:#fff}.btn-light{background:#e8eaed;color:#17191b}.invoice-close{border:0;background:#262b30;color:#fff;border-radius:8px;width:38px;height:38px;font-size:22px;cursor:pointer}@media(max-width:600px){.invoice-overlay{padding:8px}.invoice{margin:8px auto}.invoice-body{padding:17px}.invoice-meta{grid-template-columns:1fr}.invoice-table{font-size:12px}.invoice-table th,.invoice-table td{padding:8px 3px}.invoice-actions{flex-direction:column}}
 </style>
-<style>@media print{body>*:not(#invoiceOverlay){display:none!important}.invoice-overlay{display:block!important;position:static;background:#fff;padding:0}.invoice{box-shadow:none;width:100%;margin:0}.invoice-actions{display:none!important}.invoice-head{color:#000;background:#fff;border-bottom:2px solid #111}.invoice-close{display:none!important}}</style></head>
+<style>@media print{body>*:not(#invoiceOverlay){display:none!important}.invoice-overlay{display:block!important;position:static;background:#fff;padding:0}.invoice{box-shadow:none;width:100%;margin:0}.invoice-actions{display:none!important}.invoice-head{color:#000;background:#fff;border-bottom:2px solid #111}.invoice-close{display:none!important}}.qty button:disabled,.qty-card button:disabled,.add:disabled{opacity:.45;cursor:not-allowed}.locked-banner{padding:10px 12px;background:#2a1d1d;border:1px solid #6b3030;color:#ffd9d9;border-radius:10px;margin:10px 0;font-size:13px;font-weight:700}</style></head>
 <body>
 <header><div class="top"><div class="brand"><a href="index.html" style="color:inherit;text-decoration:none">RPC<span>COMERCIALIZADORA</span></a></div><button class="cart" onclick="openCart()">🛒 Pedido (<b id="cartCount">0</b>)</button></div></header>
 <section class="hero"><p style="margin:0 0 14px"><a href="index.html" style="color:#fff">← Volver al inicio</a></p><h1>Catálogo RPC</h1><p>Piezas, repuestos y accesorios para motos, carros y bicicletas. Selecciona tus productos y prepara tu pedido por WhatsApp.</p></section>
@@ -64,7 +64,7 @@ footer{border-top:1px solid #292929;padding:30px 18px;color:#999;text-align:cent
 </div></div>
 
 <div class="toast" id="toast">Producto agregado al pedido</div>
-<div class="invoice-overlay" id="invoiceOverlay"><section class="invoice" id="invoice"><div class="invoice-head"><div><h2>RPC COMERCIALIZADORA</h2><div>Prefactura / Orden de pedido</div></div><button class="invoice-close" onclick="closeInvoice()">×</button></div><div class="invoice-body"><div class="invoice-no" id="invoiceNo"></div><div class="invoice-meta"><div><b>Fecha:</b> <span id="invoiceDate"></span></div><div><b>Cliente:</b> <span id="invoiceCustomer"></span></div><div><b>Teléfono:</b> <span id="invoicePhone"></span></div><div><b>Estado:</b> Pendiente de confirmación</div></div><table class="invoice-table"><thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Importe</th></tr></thead><tbody id="invoiceRows"></tbody></table><div class="invoice-total" id="invoiceTotal"></div><div class="invoice-note">Esta prefactura/orden es una solicitud de pedido. Los precios, disponibilidad y condiciones finales deben ser confirmados por RPC COMERCIALIZADORA.</div><div class="invoice-actions"><button class="btn-green" onclick="sendWhatsApp()">📲 Enviar por WhatsApp</button><button class="btn-light" onclick="printInvoice()">🖨️ Imprimir / Guardar PDF</button><button class="btn-dark" onclick="closeInvoice()">Nueva compra</button></div></div></section></div>
+<div class="invoice-overlay" id="invoiceOverlay"><section class="invoice" id="invoice"><div class="invoice-head"><div><h2>RPC COMERCIALIZADORA</h2><div>Prefactura / Orden de pedido</div></div><button class="invoice-close" onclick="closeInvoice()">×</button></div><div class="invoice-body"><div class="invoice-no" id="invoiceNo"></div><div class="locked-banner">🔒 Pedido registrado y bloqueado. Los productos y cantidades ya no se pueden modificar.</div><div class="invoice-meta"><div><b>Fecha:</b> <span id="invoiceDate"></span></div><div><b>Cliente:</b> <span id="invoiceCustomer"></span></div><div><b>Teléfono:</b> <span id="invoicePhone"></span></div><div><b>Estado:</b> Pendiente de confirmación</div></div><table class="invoice-table"><thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Importe</th></tr></thead><tbody id="invoiceRows"></tbody></table><div class="invoice-total" id="invoiceTotal"></div><div class="invoice-note">Esta prefactura/orden es una solicitud de pedido. Los precios, disponibilidad y condiciones finales deben ser confirmados por RPC COMERCIALIZADORA.</div><div class="invoice-actions"><button class="btn-green" onclick="sendWhatsApp()">📲 Enviar por WhatsApp</button><button class="btn-light" onclick="printInvoice()">🖨️ Imprimir / Guardar PDF</button><button class="btn-dark" onclick="closeInvoice()">Nueva compra</button></div></div></section></div>
 <script>
 const SUPABASE_URL = "https://tzbretuogtmhunfxmake.supabase.co";
 const SUPABASE_KEY = "sb_publishable_SFA-Aa1-g7z1Yw14quuYMA_1w9IRYFP";
@@ -76,6 +76,12 @@ const CART_KEY="rpc_cart_v1";
 const CUSTOMER_KEY="rpc_customer_v1";
 let cart=loadCart();
 let currentOrderItems=[];
+const LOCKED_ORDER_KEY="rpc_locked_order_v1";
+function isOrderLocked(){return localStorage.getItem(LOCKED_ORDER_KEY)==="1"}
+function saveLockedOrder(){localStorage.setItem(LOCKED_ORDER_KEY,"1");localStorage.setItem("rpc_locked_order_items",JSON.stringify(currentOrderItems))}
+function loadLockedOrder(){try{if(localStorage.getItem(LOCKED_ORDER_KEY)!=="1")return false;const raw=JSON.parse(localStorage.getItem("rpc_locked_order_items")||"[]");if(!Array.isArray(raw)||!raw.length)return false;currentOrderItems=raw;return true}catch(e){return false}}
+function clearLockedOrder(){localStorage.removeItem(LOCKED_ORDER_KEY);localStorage.removeItem("rpc_locked_order_items")}
+
 
 function cats(){return ["Todos",...new Set(PRODUCTS.map(p=>p.categoria).filter(Boolean))]}
 function renderTabs(){
@@ -94,7 +100,7 @@ function saveCart(){localStorage.setItem(CART_KEY,JSON.stringify(cart));updateCo
 function loadCustomer(){try{return JSON.parse(localStorage.getItem(CUSTOMER_KEY)||"{}")}catch(e){return {}}}
 function saveCustomer(){localStorage.setItem(CUSTOMER_KEY,JSON.stringify({name:document.getElementById("customerName").value.trim(),phone:document.getElementById("customerPhone").value.trim(),note:document.getElementById("comment").value.trim()}))}
 function productQty(id){const x=cart.find(x=>String(x.id)===String(id));return x?x.qty:0}
-function adjustCard(id,d){const p=PRODUCTS.find(p=>String(p.id)===String(id));if(!p)return;let x=cart.find(x=>String(x.id)===String(id));if(!x&&d>0){x={id:p.id,nombre:p.producto,precio:Number(p.precio||0),qty:0,categoria:p.categoria,subcategoria:p.subcategoria,codigo:p.codigo,foto:p.foto};cart.push(x)}if(x){x.qty+=d;if(x.qty<=0)cart=cart.filter(y=>String(y.id)!==String(id))}saveCart();render();if(d>0)showToast("Producto agregado al pedido")}
+function adjustCard(id,d){if(isOrderLocked()){showToast("El pedido ya está confirmado y bloqueado. Pulsa Nueva compra para empezar otro.");return}const p=PRODUCTS.find(p=>String(p.id)===String(id));if(!p)return;let x=cart.find(x=>String(x.id)===String(id));if(!x&&d>0){x={id:p.id,nombre:p.producto,precio:Number(p.precio||0),qty:0,categoria:p.categoria,subcategoria:p.subcategoria,codigo:p.codigo,foto:p.foto};cart.push(x)}if(x){x.qty+=d;if(x.qty<=0)cart=cart.filter(y=>String(y.id)!==String(id))}saveCart();render();if(d>0)showToast("Producto agregado al pedido")}
 function add(i){adjustCard(PRODUCTS[i].id,1)}
 function updateCount(){document.getElementById("cartCount").textContent=cart.reduce((a,x)=>a+Number(x.qty||0),0)}
 function openCart(){document.getElementById("overlay").style.display="block";renderCart()}
@@ -104,10 +110,11 @@ function renderCart(){
  if(!cart.length){box.innerHTML="<p style='color:#999'>Tu pedido está vacío.</p>";return}
  box.innerHTML=cart.map(x=>`<div class="item"><div class="itemtop"><b>${esc(x.nombre)}</b><span>${fmt(x.precio)}</span></div><div class="qty"><button onclick="changeCart('${esc(String(x.id))}',-1)">−</button><b>${x.qty}</b><button onclick="changeCart('${esc(String(x.id))}',1)">+</button><button onclick="removeItem('${esc(String(x.id))}')" style="margin-left:auto">✕</button></div></div>`).join("");
 }
-function changeCart(id,n){const x=cart.find(x=>String(x.id)===String(id));if(!x)return;x.qty+=n;if(x.qty<=0)cart=cart.filter(y=>String(y.id)!==String(id));saveCart();renderCart();render()}
-function removeItem(id){cart=cart.filter(y=>String(y.id)!==String(id));saveCart();renderCart();render()}
+function changeCart(id,n){if(isOrderLocked()){return}const x=cart.find(x=>String(x.id)===String(id));if(!x)return;x.qty+=n;if(x.qty<=0)cart=cart.filter(y=>String(y.id)!==String(id));saveCart();renderCart();render()}
+function removeItem(id){if(isOrderLocked())return;cart=cart.filter(y=>String(y.id)!==String(id));saveCart();renderCart();render()}
 function showToast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(window._toast);window._toast=setTimeout(()=>el.classList.remove("show"),1600)}
 async function prepareOrder(){
+ if(isOrderLocked()){alert('Ya tienes un pedido generado y bloqueado. Pulsa «Nueva compra» para iniciar otro.');return}
  if(!cart.length){alert("Agrega al menos un producto.");return}
  saveCustomer();
  const c=loadCustomer();
@@ -119,6 +126,7 @@ async function prepareOrder(){
  try{
    await persistOrder();
    currentOrderItems=cart.map(x=>({...x}));
+   saveLockedOrder();
    cart=[];
    localStorage.removeItem(CART_KEY);
    updateCount();
@@ -150,10 +158,10 @@ async function persistOrder(){
  sessionStorage.setItem('rpc_saved_order_number',order);
 }
 function renderInvoice(){const c=loadCustomer();const items=currentOrderItems;document.getElementById("invoiceNo").textContent="Orden #"+currentOrderNumber();document.getElementById("invoiceDate").textContent=new Date().toLocaleString("es-CU");document.getElementById("invoiceCustomer").textContent=c.name||"No indicado";document.getElementById("invoicePhone").textContent=c.phone||"No indicado";document.getElementById("invoiceRows").innerHTML=items.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${x.qty}</td><td>${fmt(x.precio)}</td><td>${fmt(x.precio*x.qty)}</td></tr>`).join("");document.getElementById("invoiceTotal").textContent="Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0))}
-function finishCurrentOrder(){currentOrderItems=[];sessionStorage.removeItem('rpc_current_order');sessionStorage.removeItem('rpc_saved_order_id');sessionStorage.removeItem('rpc_saved_order_number');document.getElementById('invoiceOverlay').style.display='none';updateCount();render()}
+function finishCurrentOrder(){clearLockedOrder();currentOrderItems=[];sessionStorage.removeItem('rpc_current_order');sessionStorage.removeItem('rpc_saved_order_id');sessionStorage.removeItem('rpc_saved_order_number');document.getElementById('invoiceOverlay').style.display='none';updateCount();render()}
 function closeInvoice(){finishCurrentOrder()}
 function printInvoice(){window.print()}
-function sendWhatsApp(){if(!currentOrderItems.length){alert("No hay una orden pendiente de enviar.");return}saveCustomer();const c=loadCustomer(),order=currentOrderNumber(),items=currentOrderItems;let msg=`Hola, quiero hacer un pedido en RPC COMERCIALIZADORA.%0A%0AORDEN: ${encodeURIComponent(order)}%0A`;items.forEach(x=>{msg+=`• ${encodeURIComponent(x.nombre)} — ${x.qty} ud. — ${encodeURIComponent(fmt(x.precio*x.qty))}%0A`});msg+=`%0A${encodeURIComponent("Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0)))}%0A`;if(c.name)msg+=encodeURIComponent("Nombre: "+c.name)+"%0A";if(c.phone)msg+=encodeURIComponent("Teléfono: "+c.phone)+"%0A";if(c.note)msg+=encodeURIComponent("Comentario: "+c.note)+"%0A";finishCurrentOrder();window.location.href="https://wa.me/"+WHATSAPP+"?text="+msg}
+function sendWhatsApp(){if(!currentOrderItems.length){alert("No hay una orden pendiente de enviar.");return}saveCustomer();const c=loadCustomer(),order=currentOrderNumber(),items=currentOrderItems;let msg=`Hola, quiero hacer un pedido en RPC COMERCIALIZADORA.%0A%0AORDEN: ${encodeURIComponent(order)}%0A`;items.forEach(x=>{msg+=`• ${encodeURIComponent(x.nombre)} — ${x.qty} ud. — ${encodeURIComponent(fmt(x.precio*x.qty))}%0A`});msg+=`%0A${encodeURIComponent("Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0)))}%0A`;if(c.name)msg+=encodeURIComponent("Nombre: "+c.name)+"%0A";if(c.phone)msg+=encodeURIComponent("Teléfono: "+c.phone)+"%0A";if(c.note)msg+=encodeURIComponent("Comentario: "+c.note)+"%0A";window.location.href="https://wa.me/"+WHATSAPP+"?text="+msg}
 async function loadProducts(){
  try{
    const response=await fetch(`${SUPABASE_URL}/rest/v1/PRODUCTOS?select=id,nombre,categoria,subcategoria,codigo,precio_cup,disponible,descripcion,foto_url,cantidad&order=id.asc`,{headers:{"apikey":SUPABASE_KEY}});
@@ -177,12 +185,15 @@ function render(){
  if(loading){document.getElementById("count").textContent="Cargando catálogo…";document.getElementById("grid").innerHTML='<div class="empty">⏳ Cargando los productos de RPC COMERCIALIZADORA…</div>';return}
  let list=PRODUCTS.filter(p=>(category==="Todos"||p.categoria===category)&&(sub==="Todos"||p.subcategoria===sub)&&(!q||`${p.producto} ${p.codigo} ${p.categoria} ${p.subcategoria}`.toLowerCase().includes(q)));
  document.getElementById("count").textContent=`Mostrando ${list.length} producto${list.length===1?"":"s"}`;
- document.getElementById("grid").innerHTML=list.length?list.map(p=>{const qv=productQty(p.id);return `<article class="card"><div class="photo">${p.foto?`<img src="${esc(p.foto)}" style="width:100%;height:100%;object-fit:cover">`:"⚙️"}</div><div class="info"><div class="tag">${esc(p.categoria)} · ${esc(p.subcategoria)}</div><h3>${esc(p.producto)}</h3><div class="code">${p.codigo?`Código: ${esc(p.codigo)}`:""}</div><div class="price">${money(p.precio).toLocaleString("es-ES")} CUP <small>precio web</small></div><div class="qty-card"><button onclick="adjustCard('${esc(String(p.id))}',-1)">−</button><span>${qv}</span><button onclick="adjustCard('${esc(String(p.id))}',1)">+</button></div><button class="add ${qv?'added':''}" onclick="add(${PRODUCTS.indexOf(p)})">${qv?'✓ En el pedido':' + Agregar al pedido'}</button></div></article>`}).join(""):`<div class="empty">No encontramos productos con esa búsqueda.</div>`;
+ document.getElementById("grid").innerHTML=list.length?list.map(p=>{const qv=productQty(p.id);return `<article class="card"><div class="photo">${p.foto?`<img src="${esc(p.foto)}" style="width:100%;height:100%;object-fit:cover">`:"⚙️"}</div><div class="info"><div class="tag">${esc(p.categoria)} · ${esc(p.subcategoria)}</div><h3>${esc(p.producto)}</h3><div class="code">${p.codigo?`Código: ${esc(p.codigo)}`:""}</div><div class="price">${money(p.precio).toLocaleString("es-ES")} CUP <small>precio web</small></div><div class="qty-card"><button ${isOrderLocked()?"disabled":""} onclick="adjustCard('${esc(String(p.id))}',-1)">−</button><span>${qv}</span><button ${isOrderLocked()?"disabled":""} onclick="adjustCard('${esc(String(p.id))}',1)">+</button></div><button class="add ${qv?'added':''}" ${isOrderLocked()?"disabled":""} onclick="add(${PRODUCTS.indexOf(p)})">${qv?'✓ En el pedido':' + Agregar al pedido'}</button></div></article>`}).join(""):`<div class="empty">No encontramos productos con esa búsqueda.</div>`;
 }
 
 document.getElementById("search").addEventListener("keydown",e=>{if(e.key==="Escape"){e.target.value="";render()}});
 window.addEventListener("storage",()=>{cart=loadCart();updateCount();render();if(document.getElementById("overlay").style.display==="block")renderCart()});
 updateCount();
+if(loadLockedOrder()){
+  setTimeout(()=>{renderInvoice();document.getElementById('invoiceOverlay').style.display='block';},0);
+}
 loadProducts();
 </script>
 </body>
