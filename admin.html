@@ -148,7 +148,8 @@ async function showAdmin(user){
  if(!user || user.id!==ADMIN_UID){await db.auth.signOut();showMsg('loginMsg','Esta cuenta no tiene permisos de administración.','err');return;}
  document.getElementById('loginView').classList.add('hidden');document.getElementById('adminView').classList.remove('hidden');
  document.getElementById('topActions').innerHTML='<span class="small">Administrador</span>';
- showAdminSection('menu');
+ const lastSection=localStorage.getItem('rpc_admin_last_section');
+ showAdminSection(lastSection==='productsSection'||lastSection==='ordersSection'?lastSection:'menu',false);
 }
 async function login(){
  hideMsg('loginMsg');const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
@@ -160,13 +161,17 @@ async function logout(){await db.auth.signOut();}
 function goCatalog(){location.href='catalogo.html';}
 function goHome(){location.href='index.html';}
 
-function showAdminSection(section){
+function showAdminSection(section, remember=true){
  const menu=document.getElementById('adminMenu');
  const products=document.getElementById('productsSection');
  const orders=document.getElementById('ordersSection');
  menu.classList.toggle('hidden',section!=='menu');
  products.classList.toggle('hidden',section!=='productsSection');
  orders.classList.toggle('hidden',section!=='ordersSection');
+ if(remember){
+   if(section==='productsSection' || section==='ordersSection') localStorage.setItem('rpc_admin_last_section',section);
+   else if(section==='menu') localStorage.removeItem('rpc_admin_last_section');
+ }
  if(section==='productsSection') loadProducts();
  if(section==='ordersSection') loadOrders();
  window.scrollTo({top:0,behavior:'smooth'});
