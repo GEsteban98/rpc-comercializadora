@@ -36,14 +36,28 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
     <div class="stats" style="margin-top:14px"><div class="stat"><b id="totalStat">0</b><small>Productos</small></div><div class="stat"><b id="availableStat">0</b><small>Disponibles</small></div><div class="stat"><b id="stockStat">0</b><small>Con cantidad</small></div></div>
   </div>
 
+  <div id="adminMenu" class="card">
+    <h2 style="margin:0 0 6px">¿Qué deseas administrar?</h2>
+    <p class="muted">Elige una sección para continuar.</p>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn primary" style="flex:1;min-width:150px" onclick="showAdminSection('productsSection')">🛠️ Productos</button>
+      <button class="btn" style="flex:1;min-width:150px" onclick="showAdminSection('ordersSection')">📦 Pedidos</button>
+    </div>
+  </div>
+
+  <section id="productsSection">
   <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h2 style="margin:0">🛠️ Productos</h2><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div>
     <div class="toolbar"><input id="searchAdmin" placeholder="🔎 Buscar por nombre o código" oninput="renderProducts()"><select id="filterCategoria" onchange="updateFilterSubcategories();renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las categorías</option><option>Carros</option><option>Motos</option><option>Bicicletas</option><option>Todo en un solo lugar</option></select><select id="filterSubcategoria" onchange="renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las subcategorías</option><option>Mecánica</option><option>Eléctrico</option><option>Accesorios</option><option>Gomas</option></select><button class="btn" onclick="clearFilters()">Limpiar</button><button class="btn" onclick="loadProducts()">↻ Actualizar</button><button class="btn primary" onclick="openProduct()">＋ Agregar</button></div>
     <div id="mainMsg" class="msg"></div>
   </div>
 
   <div id="products" class="products"><div class="loading">Cargando productos…</div></div>
 
-  <div class="card" style="margin-top:22px">
+  </section>
+
+  <section id="ordersSection" class="hidden">
+  <div class="card" style="margin-top:0">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
       <div><h2 style="margin:0 0 5px">📦 Pedidos</h2><p class="muted">Consulta las órdenes recibidas y actualiza su estado desde el teléfono.</p></div>
       <button class="btn" onclick="loadOrders()">↻ Actualizar pedidos</button>
@@ -51,6 +65,7 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
     <div id="ordersMsg" class="msg"></div>
     <div id="orders" style="margin-top:12px"><div class="loading">Cargando pedidos…</div></div>
   </div>
+  </section>
 </section>
 </main>
 
@@ -128,6 +143,17 @@ async function login(){
 async function logout(){await db.auth.signOut();}
 function goCatalog(){location.href='catalogo.html';}
 function goHome(){location.href='index.html';}
+
+function showAdminSection(section){
+ const menu=document.getElementById('adminMenu');
+ const products=document.getElementById('productsSection');
+ const orders=document.getElementById('ordersSection');
+ menu.classList.toggle('hidden',section!=='menu');
+ products.classList.toggle('hidden',section!=='productsSection');
+ orders.classList.toggle('hidden',section!=='ordersSection');
+ if(section==='ordersSection') loadOrders();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
 
 async function loadProducts(){
  const box=document.getElementById('products');box.innerHTML='<div class="loading">Cargando productos…</div>';hideMsg('mainMsg');
@@ -418,6 +444,7 @@ async function updateOrderStatus(id,status){
 }
 
 updateFilterSubcategories();
+showAdminSection('menu');
 init();
 </script>
 </body>
