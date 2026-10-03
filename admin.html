@@ -47,7 +47,7 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
 
   <section id="productsSection">
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h2 style="margin:0">🛠️ Productos</h2><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h2 style="margin:0">🛠️ Productos</h2><div class="actions"><button class="btn primary" onclick="showAdminSection('productsSection')">🛠️ Productos</button><button class="btn" onclick="showAdminSection('ordersSection')">📦 Pedidos</button><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div></div>
     <div class="toolbar"><input id="searchAdmin" placeholder="🔎 Buscar por nombre o código" oninput="renderProducts()"><select id="filterCategoria" onchange="updateFilterSubcategories();renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las categorías</option><option>Carros</option><option>Motos</option><option>Bicicletas</option><option>Todo en un solo lugar</option></select><select id="filterSubcategoria" onchange="renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las subcategorías</option><option>Mecánica</option><option>Eléctrico</option><option>Accesorios</option><option>Gomas</option></select><button class="btn" onclick="clearFilters()">Limpiar</button><button class="btn" onclick="loadProducts()">↻ Actualizar</button><button class="btn primary" onclick="openProduct()">＋ Agregar</button></div>
     <div id="mainMsg" class="msg"></div>
   </div>
@@ -60,7 +60,7 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
   <div class="card" style="margin-top:0">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
       <div><h2 style="margin:0 0 5px">📦 Pedidos</h2><p class="muted">Consulta las órdenes recibidas y actualiza su estado desde el teléfono.</p></div>
-      <button class="btn" onclick="loadOrders()">↻ Actualizar pedidos</button>
+      <div class="actions"><button class="btn" onclick="showAdminSection('productsSection')">🛠️ Productos</button><button class="btn primary" onclick="showAdminSection('ordersSection')">📦 Pedidos</button><button class="btn" onclick="loadOrders()">↻ Actualizar</button><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div>
     </div>
     <div id="ordersMsg" class="msg"></div>
     <div id="orders" style="margin-top:12px"><div class="loading">Cargando pedidos…</div></div>
@@ -132,7 +132,7 @@ async function showAdmin(user){
  if(!user || user.id!==ADMIN_UID){await db.auth.signOut();showMsg('loginMsg','Esta cuenta no tiene permisos de administración.','err');return;}
  document.getElementById('loginView').classList.add('hidden');document.getElementById('adminView').classList.remove('hidden');
  document.getElementById('topActions').innerHTML='<span class="small">Administrador</span>';
- await loadProducts();
+ showAdminSection('menu');
 }
 async function login(){
  hideMsg('loginMsg');const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
@@ -151,6 +151,7 @@ function showAdminSection(section){
  menu.classList.toggle('hidden',section!=='menu');
  products.classList.toggle('hidden',section!=='productsSection');
  orders.classList.toggle('hidden',section!=='ordersSection');
+ if(section==='productsSection') loadProducts();
  if(section==='ordersSection') loadOrders();
  window.scrollTo({top:0,behavior:'smooth'});
 }
