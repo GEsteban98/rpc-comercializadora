@@ -63,6 +63,22 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
       <div class="actions"><button class="btn" onclick="showAdminSection('productsSection')">🛠️ Productos</button><button class="btn primary" onclick="showAdminSection('ordersSection')">📦 Pedidos</button><button class="btn" onclick="loadOrders()">↻ Actualizar</button><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div>
     </div>
     <div id="ordersMsg" class="msg"></div>
+    <div id="orderStats" class="stats" style="margin-top:12px"></div>
+    <div class="card" style="margin:12px 0 0;padding:12px;background:#101010">
+      <div style="font-weight:800;margin-bottom:8px">📅 Filtrar pedidos por período</div>
+      <div class="row">
+        <div class="field" style="margin:0"><label>Desde</label><input id="ordersFrom" type="date" onchange="applyOrderFilters()"></div>
+        <div class="field" style="margin:0"><label>Hasta</label><input id="ordersTo" type="date" onchange="applyOrderFilters()"></div>
+      </div>
+      <div class="actions" style="margin-top:9px">
+        <button class="btn" onclick="setOrderPeriod('today')">Hoy</button>
+        <button class="btn" onclick="setOrderPeriod('7days')">Últimos 7 días</button>
+        <button class="btn" onclick="setOrderPeriod('month')">Este mes</button>
+        <button class="btn" onclick="setOrderPeriod('prevmonth')">Mes anterior</button>
+        <button class="btn" onclick="clearOrderPeriod()">Todo</button>
+      </div>
+      <div class="field" style="margin:10px 0 0"><label>Estado</label><select id="ordersStatusFilter" onchange="applyOrderFilters()"><option value="">Todos los estados</option><option>Pendiente</option><option>Confirmado</option><option>Preparando</option><option>En entrega</option><option>Entregado</option><option>Cancelado</option></select></div>
+    </div>
     <div id="orders" style="margin-top:12px"><div class="loading">Cargando pedidos…</div></div>
   </div>
   </section>
@@ -419,28 +435,86 @@ async function deleteProduct(id){
 
 
 const ORDER_STATUSES=['Pendiente','Confirmado','Preparando','En entrega','Entregado','Cancelado'];
+let allOrders=[];
+let orderDetailsById={};
+
+function orderDateKey(iso){
+  if(!iso)return '';
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime()))return '';
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function setOrderPeriod(type){
+  const now=new Date();
+  let from=new Date(now), to=new Date(now);
+  if(type==='7days') from.setDate(now.getDate()-6);
+  if(type==='month'){from=new Date(now.getFullYear(),now.getMonth(),1);to=new Date(now.getFullYear(),now.getMonth()+1,0);}
+  if(type==='prevmonth'){from=new Date(now.getFullYear(),now.getMonth()-1,1);to=new Date(now.getFullYear(),now.getMonth(),0);}
+  document.getElementById('ordersFrom').value=orderDateKey(from.toISOString());
+  document.getElementById('ordersTo').value=orderDateKey(to.toISOString());
+  if(type==='today'){
+    const k=orderDateKey(now.toISOString());
+    document.getElementById('ordersFrom').value=k;document.getElementById('ordersTo').value=k;
+  }
+  applyOrderFilters();
+}
+function clearOrderPeriod(){document.getElementById('ordersFrom').value='';document.getElementById('ordersTo').value='';document.getElementById('ordersStatusFilter').value='';applyOrderFilters();}
+function renderOrderStats(list){
+  const counts={};ORDER_STATUSES.forEach(st=>counts[st]=0);list.forEach(o=>{if(counts[o.estado]!==undefined)counts[o.estado]++;});
+  const labels={Pendiente:'Pendientes de confirmación',Confirmado:'Confirmados',Preparando:'Preparando',"En entrega":'En entrega',Entregado:'Entregados',Cancelado:'Cancelados'};
+  const icons={Pendiente:'🟡',Confirmado:'🔵',Preparando:'🟠',"En entrega":'🚚',Entregado:'🟢',Cancelado:'🔴'};
+  document.getElementById('orderStats').innerHTML=ORDER_STATUSES.map(st=>`<button class="stat" style="text-align:left;color:#fff;border:1px solid #2b2b2b;cursor:pointer" onclick="setOrderStatusFilter('${esc(st)}')"><b>${counts[st]}</b><small>${icons[st]} ${labels[st]}</small></button>`).join('');
+}
+function setOrderStatusFilter(status){document.getElementById('ordersStatusFilter').value=status;applyOrderFilters();}
+function applyOrderFilters(){
+  const from=document.getElementById('ordersFrom').value;
+  const to=document.getElementById('ordersTo').value;
+  const status=document.getElementById('ordersStatusFilter').value;
+  let list=allOrders.filter(o=>{
+    const key=orderDateKey(o.fecha);
+    return (!from||key>=from)&&(!to||key<=to)&&(!status||o.estado===status);
+  });
+  renderOrderStats(allOrders.filter(o=>{
+    const key=orderDateKey(o.fecha);
+    return (!from||key>=from)&&(!to||key<=to);
+  }));
+  renderOrderList(list);
+}
+function renderOrderList(data){
+  const box=document.getElementById('orders');
+  if(!data?.length){box.innerHTML='<div style="text-align:center;color:#999;padding:25px 5px">No hay pedidos que coincidan con los filtros.</div>';return;}
+  box.innerHTML=data.map(o=>{
+    const ds=orderDetailsById[o.id]||[];
+    const items=ds.length?ds.map(d=>`<div>• ${esc(d.producto)} × ${esc(d.cantidad)} — ${money(d.subtotal)}</div>`).join(''):'<div>Sin detalle</div>';
+    const date=o.fecha?new Date(o.fecha).toLocaleString('es-CU'):'—';
+    const opts=ORDER_STATUSES.map(st=>`<option value="${esc(st)}" ${o.estado===st?'selected':''}>${esc(st)}</option>`).join('');
+    return `<article class="orderCard"><div class="orderTop"><div><div class="meta">${esc(date)}</div><div style="font-weight:900;font-size:17px;margin-top:3px">#${esc(o.numero_orden)}</div><div class="meta" style="margin-top:5px">${esc(o.nombre_cliente||'Cliente no indicado')} · ${esc(o.telefono||'Sin teléfono')}</div></div><select class="statusSelect" onchange="updateOrderStatus(${Number(o.id)},this.value)">${opts}</select></div><div class="orderItems">${items}${o.comentario?`<div style="margin-top:8px"><b>Comentario:</b> ${esc(o.comentario)}</div>`:''}</div><div style="display:flex;justify-content:flex-end;margin-top:10px"><div class="orderTotal">${money(o.total)}</div></div></article>`;
+  }).join('');
+}
 async function loadOrders(){
  const box=document.getElementById('orders');if(!box)return;
  box.innerHTML='<div class="loading">Cargando pedidos…</div>';hideMsg('ordersMsg');
- const {data,error}=await db.from('ordenes').select('id,numero_orden,fecha,nombre_cliente,telefono,comentario,total,estado').order('fecha',{ascending:false}).limit(50);
+ const {data,error}=await db.from('ordenes').select('id,numero_orden,fecha,nombre_cliente,telefono,comentario,total,estado').order('fecha',{ascending:false});
  if(error){box.innerHTML='';showMsg('ordersMsg','No se pudieron cargar los pedidos: '+error.message,'err');return;}
- if(!data?.length){box.innerHTML='<div style="text-align:center;color:#999;padding:25px 5px">No hay pedidos registrados.</div>';return;}
- const ids=data.map(x=>x.id);
- const {data:details,error:detailError}=await db.from('detalle_orden').select('orden_id,producto,cantidad,precio_unitario,subtotal').in('orden_id',ids);
- if(detailError){showMsg('ordersMsg','Los pedidos cargaron, pero no se pudieron leer sus detalles: '+detailError.message,'err');}
- const byOrder={};(details||[]).forEach(d=>(byOrder[d.orden_id]??=[]).push(d));
- box.innerHTML=data.map(o=>{
-   const ds=byOrder[o.id]||[];
-   const items=ds.length?ds.map(d=>`<div>• ${esc(d.producto)} × ${esc(d.cantidad)} — ${money(d.subtotal)}</div>`).join(''):'<div>Sin detalle</div>';
-   const date=o.fecha?new Date(o.fecha).toLocaleString('es-CU'):'—';
-   const opts=ORDER_STATUSES.map(st=>`<option value="${esc(st)}" ${o.estado===st?'selected':''}>${esc(st)}</option>`).join('');
-   return `<article class="orderCard"><div class="orderTop"><div><div class="meta">${esc(date)}</div><div style="font-weight:900;font-size:17px;margin-top:3px">#${esc(o.numero_orden)}</div><div class="meta" style="margin-top:5px">${esc(o.nombre_cliente||'Cliente no indicado')} · ${esc(o.telefono||'Sin teléfono')}</div></div><select class="statusSelect" onchange="updateOrderStatus(${Number(o.id)},this.value)">${opts}</select></div><div class="orderItems">${items}${o.comentario?`<div style="margin-top:8px"><b>Comentario:</b> ${esc(o.comentario)}</div>`:''}</div><div style="display:flex;justify-content:flex-end;margin-top:10px"><div class="orderTotal">${money(o.total)}</div></div></article>`;
- }).join('');
+ allOrders=data||[];
+ orderDetailsById={};
+ if(allOrders.length){
+   const ids=allOrders.map(x=>x.id);
+   const {data:details,error:detailError}=await db.from('detalle_orden').select('orden_id,producto,cantidad,precio_unitario,subtotal').in('orden_id',ids);
+   if(detailError)showMsg('ordersMsg','Los pedidos cargaron, pero no se pudieron leer sus detalles: '+detailError.message,'err');
+   (details||[]).forEach(d=>(orderDetailsById[d.orden_id]??=[]).push(d));
+ }
+ applyOrderFilters();
 }
 async function updateOrderStatus(id,status){
  if(!ORDER_STATUSES.includes(status))return;
  const {error}=await db.from('ordenes').update({estado:status}).eq('id',id);
  if(error){showMsg('ordersMsg','No se pudo actualizar el estado: '+error.message,'err');await loadOrders();return;}
+ const row=allOrders.find(o=>Number(o.id)===Number(id));if(row)row.estado=status;
+ applyOrderFilters();
  showMsg('ordersMsg','Estado del pedido actualizado.','ok');
 }
 
