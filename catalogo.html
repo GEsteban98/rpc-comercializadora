@@ -162,7 +162,7 @@ function renderInvoice(){const c=loadCustomer();const items=currentOrderItems;do
 function finishCurrentOrder(){clearLockedOrder();currentOrderItems=[];sessionStorage.removeItem('rpc_current_order');sessionStorage.removeItem('rpc_saved_order_id');sessionStorage.removeItem('rpc_saved_order_number');document.getElementById('invoiceOverlay').style.display='none';updateCount();render()}
 function closeInvoice(){finishCurrentOrder()}
 function printInvoice(){window.print()}
-function sendWhatsApp(){if(!currentOrderItems.length){alert("No hay una orden pendiente de enviar.");return}saveCustomer();const c=loadCustomer(),order=currentOrderNumber(),items=currentOrderItems;let msg=`Hola, quiero hacer un pedido en RPC COMERCIALIZADORA.%0A%0AORDEN: ${encodeURIComponent(order)}%0A`;items.forEach(x=>{msg+=`• ${encodeURIComponent(x.nombre)} — ${x.qty} ud. — ${encodeURIComponent(fmt(x.precio*x.qty))}%0A`});msg+=`%0A${encodeURIComponent("Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0)))}%0A`;if(c.name)msg+=encodeURIComponent("Nombre: "+c.name)+"%0A";if(c.phone)msg+=encodeURIComponent("Teléfono: "+c.phone)+"%0A";if(c.note)msg+=encodeURIComponent("Comentario: "+c.note)+"%0A";const waUrl="https://wa.me/"+WHATSAPP+"?text="+msg;const w=window.open(waUrl,"_blank");if(!w){window.location.href=waUrl;return}}
+function sendWhatsApp(){if(!currentOrderItems.length){alert("No hay una orden pendiente de enviar.");return}saveCustomer();const c=loadCustomer(),order=currentOrderNumber(),items=currentOrderItems;let msg=`Hola, quiero hacer un pedido en RPC COMERCIALIZADORA.%0A%0AORDEN: ${encodeURIComponent(order)}%0A`;items.forEach(x=>{msg+=`• ${encodeURIComponent(x.nombre)} — ${x.qty} ud. — ${encodeURIComponent(fmt(x.precio*x.qty))}%0A`});msg+=`%0A${encodeURIComponent("Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0)))}%0A`;if(c.name)msg+=encodeURIComponent("Nombre: "+c.name)+"%0A";if(c.phone)msg+=encodeURIComponent("Teléfono: "+c.phone)+"%0A";if(c.note)msg+=encodeURIComponent("Comentario: "+c.note)+"%0A";const waUrl="https://wa.me/"+WHATSAPP+"?text="+msg;sessionStorage.setItem("rpc_return_from_whatsapp_v1","1");window.location.href=waUrl}
 async function loadProducts(){
  try{
    const response=await fetch(`${SUPABASE_URL}/rest/v1/PRODUCTOS?select=id,nombre,categoria,subcategoria,codigo,precio_cup,disponible,descripcion,foto_url,cantidad&order=id.asc`,{headers:{"apikey":SUPABASE_KEY}});
@@ -192,8 +192,25 @@ function render(){
 document.getElementById("search").addEventListener("keydown",e=>{if(e.key==="Escape"){e.target.value="";render()}});
 window.addEventListener("storage",()=>{cart=loadCart();updateCount();render();if(document.getElementById("overlay").style.display==="block")renderCart()});
 updateCount();
+
+function restoreAfterWhatsApp(){
+  if(sessionStorage.getItem("rpc_return_from_whatsapp_v1")!=="1") return;
+  sessionStorage.removeItem("rpc_return_from_whatsapp_v1");
+  const overlay=document.getElementById("invoiceOverlay");
+  if(overlay) overlay.style.display="none";
+}
+
+window.addEventListener("pageshow",restoreAfterWhatsApp);
+
 if(loadLockedOrder()){
-  setTimeout(()=>{renderInvoice();document.getElementById('invoiceOverlay').style.display='block';},0);
+  setTimeout(()=>{
+    renderInvoice();
+    if(sessionStorage.getItem("rpc_return_from_whatsapp_v1")==="1"){
+      restoreAfterWhatsApp();
+    }else{
+      document.getElementById('invoiceOverlay').style.display='block';
+    }
+  },0);
 }
 loadProducts();
 </script>
