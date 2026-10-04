@@ -400,29 +400,61 @@ async function applyCrop(){
 }
 document.getElementById('pFoto').addEventListener('input',()=>{if(!selectedPhotoFile)previewPhoto();});
 function clearFilters(){document.getElementById('searchAdmin').value='';document.getElementById('filterCategoria').value='';updateFilterSubcategories();document.getElementById('filterSubcategoria').value='';renderProducts();}
+function storagePathFromPublicUrl(url){
+ if(!url)return null;
+ try{
+   const u=new URL(url);
+   const marker=`/storage/v1/object/public/${PHOTO_BUCKET}/`;
+   const i=u.pathname.indexOf(marker);
+   if(i===-1)return null;
+   const path=decodeURIComponent(u.pathname.slice(i+marker.length));
+   return path||null;
+ }catch(_){return null;}
+}
+
 async function uploadPhoto(file,id){
  const ext=file.type==='image/webp'?'webp':'jpg';
  const path=`productos/${id}-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
  const {error}=await db.storage.from(PHOTO_BUCKET).upload(path,file,{contentType:file.type||'image/webp',upsert:false,cacheControl:'31536000'});
  if(error)throw error;
- return db.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+ return {url:db.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl,path};
+}
+
+async function removeStoragePhoto(path){
+ if(!path)return;
+ const {error}=await db.storage.from(PHOTO_BUCKET).remove([path]);
+ if(error)console.warn('No se pudo eliminar la foto anterior de Storage:',error.message);
 }
 
 async function saveProduct(e){
  e.preventDefault();hideMsg('formMsg');const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Guardando…';
  try{
   const id=document.getElementById('pId').value;
+  const oldPhotoUrl=id?(products.find(p=>String(p.id)===String(id))?.foto_url||''):'';
+  const oldPhotoPath=storagePathFromPublicUrl(oldPhotoUrl);
+  let newUploadedPath=null;
   const payload={nombre:document.getElementById('pNombre').value.trim(),categoria:document.getElementById('pCategoria').value,subcategoria:document.getElementById('pSubcategoria').value,codigo:document.getElementById('pCodigo').value.trim()||null,precio_cup:Number(document.getElementById('pPrecio').value),cantidad:Number(document.getElementById('pCantidad').value||0),disponible:document.getElementById('pDisponible').value==='true',foto_url:document.getElementById('pFoto').value.trim()||null,descripcion:document.getElementById('pDescripcion').value.trim()||null};
   if(id){
-    if(selectedPhotoFile) payload.foto_url=await uploadPhoto(selectedPhotoFile,id);
-    const {error}=await db.from(TABLE).update(payload).eq('id',id);if(error)throw error;showMsg('mainMsg','Producto actualizado correctamente.','ok');
+    if(selectedPhotoFile){
+      const uploaded=await uploadPhoto(selectedPhotoFile,id);
+      payload.foto_url=uploaded.url;
+      newUploadedPath=uploaded.path;
+    }
+    const {error}=await db.from(TABLE).update(payload).eq('id',id);
+    if(error){
+      if(newUploadedPath)await removeStoragePhoto(newUploadedPath);
+      throw error;
+    }
+    if(newUploadedPath && oldPhotoPath && oldPhotoPath!==newUploadedPath)await removeStoragePhoto(oldPhotoPath);
+    showMsg('mainMsg','Producto actualizado correctamente.','ok');
   }
   else{
     const {data:newRow,error}=await db.from(TABLE).insert(payload).select('id').single();
     if(error)throw error;
     if(selectedPhotoFile){
-      const photoUrl=await uploadPhoto(selectedPhotoFile,newRow.id);
-      const {error:photoError}=await db.from(TABLE).update({foto_url:photoUrl}).eq('id',newRow.id);
+      const uploaded=await uploadPhoto(selectedPhotoFile,newRow.id);
+      const {error:photoError}=await db.from(TABLE).update({foto_url:uploaded.url}).eq('id',newRow.id);
+      if(photoError)await removeStoragePhoto(uploaded.path);
       if(photoError)throw photoError;
     }
     showMsg('mainMsg','Producto agregado correctamente.','ok');
