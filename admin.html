@@ -10,6 +10,12 @@
 *{box-sizing:border-box}html,body{margin:0;background:#0b0b0b;color:#f3f3f3;font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}
 body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{position:sticky;top:0;z-index:20;background:rgba(11,11,11,.96);border-bottom:1px solid #2c2c2c;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:900;letter-spacing:2px;font-size:19px}.brandLink{color:inherit;text-decoration:none;display:inline-block}.brandLink:active{opacity:.8}.brand span{display:block;font-size:10px;color:#aaa;letter-spacing:3px;margin-top:3px}.btn{border:1px solid #444;background:#181818;color:#fff;border-radius:9px;padding:10px 13px;font-weight:700}.btn.primary{background:#e21b23;border-color:#e21b23}.btn.green{background:#20b958;border-color:#20b958}.btn.danger{background:#5e171b;border-color:#7d2429}.btn:disabled{opacity:.5;cursor:not-allowed}
 .card{background:#141414;border:1px solid #2b2b2b;border-radius:14px;padding:16px;margin:14px 0}.login{max-width:440px;margin:12vh auto}.h1{font-size:27px;margin:0 0 5px}.muted{color:#999;font-size:13px;line-height:1.45}.field{margin:10px 0}.field label{display:block;color:#bbb;font-size:12px;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px;outline:none}.field textarea{min-height:85px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}.msg{padding:10px 12px;border-radius:9px;background:#171717;border:1px solid #333;font-size:13px;margin:10px 0;display:none}.msg.show{display:block}.msg.ok{border-color:#276b40}.msg.err{border-color:#8a3439;color:#ffb8bb}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}.toolbar input{background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px}.stats{display:flex;gap:10px;overflow:auto;padding-bottom:3px}.stat{min-width:115px;background:#171717;border:1px solid #2b2b2b;border-radius:10px;padding:11px}.stat b{display:block;font-size:20px}.stat small{color:#999}.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.product{background:#151515;border:1px solid #2d2d2d;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px}.pname{font-weight:800;line-height:1.3}.meta{font-size:11px;color:#999}.price{font-size:18px;font-weight:900}.badge{display:inline-block;font-size:10px;border-radius:20px;padding:4px 7px;background:#242424;color:#ccc}.badge.ok{background:#123b25;color:#8be0a8}.badge.no{background:#43181b;color:#ffb0b4}.photoPreview{width:100%;height:130px;object-fit:cover;border-radius:9px;background:#222;display:none}.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;display:none;overflow:auto}.modal.open{display:block}.modalBox{max-width:680px;margin:25px auto;background:#121212;border:1px solid #333;border-radius:14px;padding:18px}.modalTop{display:flex;justify-content:space-between;align-items:center;gap:10px}.close{background:none;border:0;color:#fff;font-size:28px}.small{font-size:11px;color:#777}.loading{text-align:center;padding:35px;color:#aaa}.hidden{display:none!important}.quick{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.quick button{width:34px;height:34px;border:1px solid #555;background:#202020;color:#fff;border-radius:8px;font-weight:900}.quick .qtynum{min-width:34px;text-align:center;font-weight:900}.orderCard{background:#151515;border:1px solid #2d2d2d;border-radius:12px;padding:13px;margin:10px 0}.orderTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.orderItems{border-top:1px solid #2c2c2c;margin-top:10px;padding-top:8px;font-size:12px;color:#bbb}.statusSelect{background:#0d0d0d;color:#fff;border:1px solid #444;border-radius:8px;padding:8px;font-weight:700}.orderTotal{font-size:17px;font-weight:900}.cropModal{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:100;display:none;overflow:auto}.cropModal.open{display:flex;align-items:center;justify-content:center;padding:14px}.cropBox{width:min(94vw,560px);background:#121212;border:1px solid #333;border-radius:16px;padding:16px}.cropStage{position:relative;width:min(88vw,460px);height:min(88vw,460px);aspect-ratio:1/1;margin:12px auto;background:#050505;overflow:hidden;border-radius:12px;touch-action:none}.cropCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;touch-action:none;cursor:grab}.cropStage:active .cropCanvas{cursor:grabbing}.cropGrid{position:absolute;z-index:2;inset:0;border:2px solid rgba(255,255,255,.9);pointer-events:none;background:linear-gradient(to right,transparent 33.1%,rgba(255,255,255,.25) 33.1%,rgba(255,255,255,.25) 33.5%,transparent 33.5%,transparent 66.1%,rgba(255,255,255,.25) 66.1%,rgba(255,255,255,.25) 66.5%,transparent 66.5%),linear-gradient(to bottom,transparent 33.1%,rgba(255,255,255,.25) 33.1%,rgba(255,255,255,.25) 33.5%,transparent 33.5%,transparent 66.1%,rgba(255,255,255,.25) 66.1%,rgba(255,255,255,.25) 66.5%,transparent 66.5%)}.cropHelp{text-align:center;color:#aaa;font-size:12px;margin:4px 0 10px}.zoomRow{display:flex;align-items:center;gap:10px}.zoomRow input{flex:1}.cropActions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}.fileInfo{margin-top:7px;color:#8be0a8;font-size:11px}
+
+.inventoryItem{background:#151515;border:1px solid #2d2d2d;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.inventoryItem.counted{border-color:#276b40}.invHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.invName{font-weight:800;line-height:1.3}.invRef{font-size:11px;color:#999}.invSystem{font-size:12px;color:#aaa}.invSystem b{color:#ddd}
+.invCountRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.invCountInput{width:100%;background:#0d0d0d;color:#fff;border:1px solid #555;border-radius:9px;padding:12px;font-size:18px;font-weight:800}
+.invSave{min-width:92px}.invState{font-size:11px;color:#999;min-height:16px}.progressBar{height:10px;background:#252525;border-radius:99px;overflow:hidden;margin-top:9px}.progressFill{height:100%;background:#20b958;width:0%;transition:width .2s}
 @media(max-width:650px){.row{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.products{grid-template-columns:1fr}.top{padding-left:12px;padding-right:12px}.wrap{padding:12px}.modalBox{margin:0;border-radius:0;min-height:100vh;border-left:0;border-right:0}}
 </style>
 </head>
@@ -42,12 +48,13 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
     <div class="actions" style="margin-top:12px">
       <button class="btn primary" style="flex:1;min-width:150px" onclick="showAdminSection('productsSection')">🛠️ Productos</button>
       <button class="btn" style="flex:1;min-width:150px" onclick="showAdminSection('ordersSection')">📦 Pedidos</button>
+      <button class="btn" style="flex:1;min-width:150px" onclick="showAdminSection('inventorySection')">📊 Inventario</button>
     </div>
   </div>
 
   <section id="productsSection">
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h2 style="margin:0">🛠️ Productos</h2><div class="actions"><button class="btn primary" onclick="showAdminSection('productsSection')">🛠️ Productos</button><button class="btn" onclick="showAdminSection('ordersSection')">📦 Pedidos</button><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h2 style="margin:0">🛠️ Productos</h2><div class="actions"><button class="btn primary" onclick="showAdminSection('productsSection')">🛠️ Productos</button><button class="btn" onclick="showAdminSection('ordersSection')">📦 Pedidos</button><button class="btn" onclick="showAdminSection('inventorySection')">📊 Inventario</button><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div></div>
     <div class="toolbar"><input id="searchAdmin" placeholder="🔎 Buscar por nombre o código" oninput="renderProducts()"><select id="filterCategoria" onchange="updateFilterSubcategories();renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las categorías</option><option>Carros</option><option>Motos</option><option>Bicicletas</option><option>Todo en un solo lugar</option></select><select id="filterSubcategoria" onchange="renderProducts()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las subcategorías</option><option>Mecánica</option><option>Eléctrico</option><option>Accesorios</option><option>Gomas</option></select><button class="btn" onclick="clearFilters()">Limpiar</button><button class="btn" onclick="loadProducts()">↻ Actualizar</button><button class="btn primary" onclick="openProduct()">＋ Agregar</button></div>
     <div id="mainMsg" class="msg"></div>
   </div>
@@ -60,7 +67,7 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
   <div class="card" style="margin-top:0">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
       <div><h2 style="margin:0 0 5px">📦 Pedidos</h2><p class="muted">Consulta las órdenes recibidas y actualiza su estado desde el teléfono.</p></div>
-      <div class="actions"><button class="btn" onclick="showAdminSection('productsSection')">🛠️ Productos</button><button class="btn primary" onclick="showAdminSection('ordersSection')">📦 Pedidos</button><button class="btn" onclick="loadOrders()">↻ Actualizar</button><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div>
+      <div class="actions"><button class="btn" onclick="showAdminSection('productsSection')">🛠️ Productos</button><button class="btn primary" onclick="showAdminSection('ordersSection')">📦 Pedidos</button><button class="btn" onclick="showAdminSection('inventorySection')">📊 Inventario</button><button class="btn" onclick="loadOrders()">↻ Actualizar</button><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div>
     </div>
     <div id="ordersMsg" class="msg"></div>
     <div id="orderStats" class="stats" style="margin-top:12px"></div>
@@ -81,6 +88,49 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
     </div>
     <div id="orders" style="margin-top:12px"><div class="loading">Cargando pedidos…</div></div>
   </div>
+
+  <section id="inventorySection" class="hidden">
+    <div class="card" style="margin-top:0">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+        <div><h2 style="margin:0 0 5px">📊 Inventario</h2><p class="muted">Realiza primero el conteo físico. La cantidad actual del sistema es solo una referencia.</p></div>
+        <div class="actions">
+          <button class="btn" onclick="showAdminSection('productsSection')">🛠️ Productos</button>
+          <button class="btn" onclick="showAdminSection('ordersSection')">📦 Pedidos</button>
+          <button class="btn primary" onclick="showAdminSection('inventorySection')">📊 Inventario</button>
+          <button class="btn" onclick="loadInventory()">↻ Actualizar</button>
+          <button class="btn" onclick="showAdminSection('menu')">← Menú</button>
+        </div>
+      </div>
+      <div id="inventoryMsg" class="msg"></div>
+      <div id="inventoryStatus" class="card" style="margin:12px 0 0;background:#101010"><div class="loading">Consultando estado del inventario…</div></div>
+      <div id="inventoryCountTools" class="hidden">
+        <div class="stats" style="margin-top:12px">
+          <div class="stat"><b id="invTotal">0</b><small>Productos</small></div><div class="stat"><b id="invCounted">0</b><small>Contados</small></div>
+          <div class="stat"><b id="invPending">0</b><small>Pendientes</small></div><div class="stat"><b id="invPercent">0%</b><small>Progreso</small></div>
+        </div>
+        <div class="card" style="margin:12px 0 0;background:#101010">
+          <div class="toolbar">
+            <input id="inventorySearch" placeholder="🔎 Buscar por nombre o código" oninput="renderInventory()">
+            <select id="inventoryCategoria" onchange="updateInventorySubcategories();renderInventory()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px">
+              <option value="">Todas las categorías</option><option>Carros</option><option>Motos</option><option>Bicicletas</option><option>Todo en un solo lugar</option>
+            </select>
+            <select id="inventorySubcategoria" onchange="renderInventory()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las subcategorías</option></select>
+            <button class="btn" onclick="clearInventoryFilters()">Limpiar</button>
+          </div>
+        </div>
+        <div id="inventoryProducts" class="products"><div class="loading">Cargando inventario…</div></div>
+        <div id="inventoryConfirmBox" class="card hidden" style="margin-top:14px;border-color:#8a3439;background:#191010">
+          <h3 style="margin:0 0 6px">🔒 Inventario inicial listo</h3>
+          <p class="muted">Ya se han contado todos los productos. Al confirmar, las cantidades físicas pasarán a ser el inventario oficial y el conteo inicial quedará bloqueado.</p>
+          <button id="confirmInventoryBtn" class="btn primary" style="width:100%;margin-top:8px" onclick="confirmInitialInventory()">Confirmar inventario inicial</button>
+        </div>
+      </div>
+      <div id="inventoryLocked" class="hidden card" style="margin:12px 0 0;border-color:#276b40;background:#0f1913">
+        <h3 style="margin:0 0 6px">✅ Inventario inicial confirmado</h3>
+        <p id="inventoryLockedText" class="muted">El inventario físico ya está confirmado.</p>
+      </div>
+    </div>
+  </section>
   </section>
 </section>
 </main>
@@ -165,15 +215,18 @@ function showAdminSection(section, remember=true){
  const menu=document.getElementById('adminMenu');
  const products=document.getElementById('productsSection');
  const orders=document.getElementById('ordersSection');
+ const inventory=document.getElementById('inventorySection');
  menu.classList.toggle('hidden',section!=='menu');
  products.classList.toggle('hidden',section!=='productsSection');
  orders.classList.toggle('hidden',section!=='ordersSection');
+ inventory.classList.toggle('hidden',section!=='inventorySection');
  if(remember){
    if(section==='productsSection' || section==='ordersSection') localStorage.setItem('rpc_admin_last_section',section);
    else if(section==='menu') localStorage.removeItem('rpc_admin_last_section');
  }
  if(section==='productsSection') loadProducts();
  if(section==='ordersSection') loadOrders();
+ if(section==='inventorySection') loadInventory();
  window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -572,9 +625,101 @@ async function updateOrderStatus(id,status){
  showMsg('ordersMsg','Estado del pedido actualizado.','ok');
 }
 
+
+let inventoryProducts=[],inventoryCounts={},inventoryInitialConfirmed=false;
+
+async function loadInventory(){
+  const status=document.getElementById('inventoryStatus'),tools=document.getElementById('inventoryCountTools'),locked=document.getElementById('inventoryLocked'),confirmBox=document.getElementById('inventoryConfirmBox');
+  hideMsg('inventoryMsg'); status.innerHTML='<div class="loading">Consultando estado del inventario…</div>'; tools.classList.add('hidden'); locked.classList.add('hidden'); confirmBox.classList.add('hidden');
+  try{
+    const [{data:cfg,error:ce},{data:prods,error:pe},{data:counts,error:xe}]=await Promise.all([
+      db.from('configuracion_inventario').select('inventario_inicial_confirmado,fecha_inventario_inicial').eq('id',true).maybeSingle(),
+      db.from(TABLE).select('id,nombre,categoria,subcategoria,codigo,cantidad').order('id',{ascending:true}),
+      db.from('conteos_inventario').select('producto_id,cantidad_contada,contado_en').order('producto_id',{ascending:true})
+    ]);
+    if(ce)throw ce;if(pe)throw pe;if(xe)throw xe;
+    inventoryInitialConfirmed=Boolean(cfg?.inventario_inicial_confirmado); inventoryProducts=prods||[]; inventoryCounts={};
+    (counts||[]).forEach(c=>inventoryCounts[String(c.producto_id)]=c);
+    if(inventoryInitialConfirmed){
+      const when=cfg?.fecha_inventario_inicial?new Date(cfg.fecha_inventario_inicial).toLocaleString('es-CU'):'';
+      status.innerHTML=`<div style="display:flex;gap:10px"><div style="font-size:25px">🔒</div><div><b>Inventario inicial confirmado</b><div class="muted" style="margin-top:4px">Confirmado${when?' el '+esc(when):''}. Las existencias se modificarán mediante ventas, compras, devoluciones y ajustes.</div></div></div>`;
+      document.getElementById('inventoryLockedText').textContent='El conteo inicial está bloqueado y ya no se puede modificar desde este módulo.';
+      locked.classList.remove('hidden'); return;
+    }
+    tools.classList.remove('hidden'); renderInventory(); refreshInventoryProgress();
+    status.innerHTML='<b>📋 Inventario inicial pendiente</b><div class="muted" style="margin-top:4px">Cuenta físicamente cada producto. La cantidad del sistema es solo una referencia.</div><div class="progressBar"><div id="inventoryProgressFill" class="progressFill"></div></div><div id="inventoryProgressText" class="small" style="margin-top:6px"></div>';
+    refreshInventoryProgress();
+  }catch(err){status.innerHTML='';showMsg('inventoryMsg','No se pudo cargar el inventario: '+(err?.message||err),'err');}
+}
+
+function updateInventorySubcategories(){
+  const cat=document.getElementById('inventoryCategoria')?.value||'',sub=document.getElementById('inventorySubcategoria'); if(!sub)return;
+  const current=sub.value,opts=cat==='Todo en un solo lugar'?['Alimentación','Ferretería','Hogar','Otros']:['Mecánica','Eléctrico','Accesorios','Gomas'];
+  sub.innerHTML='<option value="">Todas las subcategorías</option>'+opts.map(x=>`<option>${esc(x)}</option>`).join('');if(opts.includes(current))sub.value=current;
+}
+function clearInventoryFilters(){document.getElementById('inventorySearch').value='';document.getElementById('inventoryCategoria').value='';updateInventorySubcategories();document.getElementById('inventorySubcategoria').value='';renderInventory();}
+
+function renderInventory(){
+  const box=document.getElementById('inventoryProducts');if(!box)return;
+  const q=(document.getElementById('inventorySearch')?.value||'').trim().toLowerCase(),cat=document.getElementById('inventoryCategoria')?.value||'',sub=document.getElementById('inventorySubcategoria')?.value||'';
+  const list=inventoryProducts.filter(p=>{
+    const hay=[p.nombre,p.codigo,p.categoria,p.subcategoria].filter(Boolean).join(' ').toLowerCase();
+    return (!q||hay.includes(q))&&(!cat||p.categoria===cat)&&(!sub||p.subcategoria===sub);
+  });
+  if(!list.length){box.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#999;padding:25px">No hay productos que coincidan con los filtros.</div>';return;}
+  box.innerHTML=list.map(p=>{
+    const c=inventoryCounts[String(p.id)],counted=c!==undefined;
+    return `<article class="inventoryItem ${counted?'counted':''}">
+      <div class="invHead"><div><div class="invName">${esc(p.nombre||'Sin nombre')}</div><div class="invRef">${esc(p.codigo||'Sin código')} · ID ${esc(p.id)}</div></div><span class="badge ${counted?'ok':'no'}">${counted?'Contado':'Pendiente'}</span></div>
+      <div class="meta">${esc(p.categoria||'')} · ${esc(p.subcategoria||'')}</div>
+      <div class="invSystem">Cantidad registrada <b>(referencia): ${esc(p.cantidad??0)}</b></div>
+      <div class="invCountRow"><div class="field" style="margin:0"><label>Cantidad física encontrada *</label><input class="invCountInput" id="inv-${p.id}" type="number" min="0" step="1" inputmode="numeric" value="${counted?esc(c.cantidad_contada):''}" placeholder="Ej.: 12"></div><button class="btn ${counted?'green':'primary'} invSave" onclick="saveInventoryCount(${Number(p.id)})">${counted?'✓ Guardado':'Guardar'}</button></div>
+      <div class="invState" id="inv-state-${p.id}">${counted?'Guardado':''}</div>
+    </article>`;
+  }).join('');
+}
+
+async function saveInventoryCount(productId){
+  if(inventoryInitialConfirmed)return;
+  const input=document.getElementById('inv-'+productId);if(!input)return;const raw=input.value.trim();
+  if(raw===''){showMsg('inventoryMsg','Indica una cantidad física. Si no hay existencias, escribe 0.','err');input.focus();return;}
+  const qty=Number(raw);if(!Number.isInteger(qty)||qty<0){showMsg('inventoryMsg','La cantidad debe ser un número entero igual o mayor que 0.','err');input.focus();return;}
+  const btn=input.closest('.invCountRow')?.querySelector('button');if(btn){btn.disabled=true;btn.textContent='Guardando…';}hideMsg('inventoryMsg');
+  try{
+    const {data:{user}}=await db.auth.getUser();if(!user||user.id!==ADMIN_UID)throw new Error('La sesión de administrador no es válida.');
+    const {error}=await db.from('conteos_inventario').upsert({producto_id:productId,cantidad_contada:qty,contado_por:user.id,contado_en:new Date().toISOString()},{onConflict:'producto_id'});
+    if(error)throw error;
+    inventoryCounts[String(productId)]={producto_id:productId,cantidad_contada:qty,contado_por:user.id,contado_en:new Date().toISOString()};
+    if(btn){btn.disabled=false;btn.textContent='✓ Guardado';btn.classList.remove('primary');btn.classList.add('green');}
+    document.getElementById('inv-state-'+productId).textContent='Guardado ahora';refreshInventoryProgress();renderInventory();
+  }catch(err){if(btn){btn.disabled=false;btn.textContent='Guardar';}showMsg('inventoryMsg','No se pudo guardar el conteo: '+(err?.message||err),'err');}
+}
+
+function refreshInventoryProgress(){
+  const total=inventoryProducts.length,counted=Object.keys(inventoryCounts).filter(id=>inventoryProducts.some(p=>String(p.id)===id)).length,pending=Math.max(0,total-counted),pct=total?Math.round(counted/total*100):0;
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};set('invTotal',total);set('invCounted',counted);set('invPending',pending);set('invPercent',pct+'%');
+  const fill=document.getElementById('inventoryProgressFill');if(fill)fill.style.width=pct+'%';
+  const txt=document.getElementById('inventoryProgressText');if(txt)txt.textContent=`${counted} de ${total} productos contados · ${pct}%`;
+  const box=document.getElementById('inventoryConfirmBox');if(box)box.classList.toggle('hidden',counted!==total);
+}
+
+async function confirmInitialInventory(){
+  if(inventoryInitialConfirmed)return;
+  const total=inventoryProducts.length,counted=Object.keys(inventoryCounts).filter(id=>inventoryProducts.some(p=>String(p.id)===id)).length;
+  if(!total||counted!==total){showMsg('inventoryMsg',`Todavía faltan ${Math.max(0,total-counted)} productos por contar.`,'err');return;}
+  if(!confirm(`⚠️ CONFIRMAR INVENTARIO INICIAL\n\nHas contado los ${total} productos.\n\nAl confirmar, las cantidades físicas pasarán a ser el inventario oficial y el inventario inicial quedará bloqueado.\n\n¿Deseas continuar?`))return;
+  const btn=document.getElementById('confirmInventoryBtn');btn.disabled=true;btn.textContent='Confirmando…';hideMsg('inventoryMsg');
+  try{
+    const {data,error}=await db.rpc('confirmar_inventario_inicial_rpc');if(error)throw error;
+    showMsg('inventoryMsg',`Inventario inicial confirmado correctamente. ${data?.productos||total} productos procesados.`,'ok');await loadInventory();
+  }catch(err){btn.disabled=false;btn.textContent='Confirmar inventario inicial';showMsg('inventoryMsg','No se pudo confirmar el inventario inicial: '+(err?.message||err),'err');}
+}
+
+updateInventorySubcategories();
 updateFilterSubcategories();
 showAdminSection('menu');
 init();
+
 </script>
 </body>
 </html>
