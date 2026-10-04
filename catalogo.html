@@ -56,8 +56,8 @@ footer{border-top:1px solid #292929;padding:30px 18px;color:#999;text-align:cent
 <h2>🛒 Tu pedido</h2>
 <div id="cartItems"></div>
 <hr>
-<label>Nombre</label><input id="customerName" placeholder="Tu nombre">
-<label>Teléfono</label><input id="customerPhone" placeholder="Tu teléfono">
+<label>Nombre</label><input id="customerName" placeholder="Tu nombre" required>
+<label>Teléfono</label><input id="customerPhone" placeholder="Tu teléfono" required>
 <label>Comentario</label><textarea id="comment" placeholder="Ej.: modelo del vehículo, año, cantidad..."></textarea>
 <button class="whatsapp" onclick="prepareOrder()">🧾 Generar prefactura / orden</button>
 <div class="notice">El precio y la disponibilidad final se confirman con RPC COMERCIALIZADORA.</div>
@@ -114,6 +114,14 @@ function changeCart(id,n){if(isOrderLocked())return;const x=cart.find(x=>String(
 function removeItem(id){if(isOrderLocked())return;cart=cart.filter(y=>String(y.id)!==String(id));saveCart();renderCart();render()}
 function showToast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(window._toast);window._toast=setTimeout(()=>el.classList.remove("show"),1600)}
 async function prepareOrder(){
+ const nombre=document.getElementById("customerName")?.value.trim()||"";
+ const telefono=document.getElementById("customerPhone")?.value.trim()||"";
+ if(!nombre||!telefono){
+   alert("Para enviar el pedido debes indicar tu nombre y teléfono.");
+   if(!nombre) document.getElementById("customerName")?.focus();
+   else document.getElementById("customerPhone")?.focus();
+   return;
+ }
  if(isOrderLocked()){alert('Ya tienes un pedido generado y bloqueado. Pulsa «Nueva compra» para iniciar otro.');return}
  if(!cart.length){alert("Agrega al menos un producto.");return}
  if(!confirm("¿Estás seguro de que todos los productos y cantidades son correctos?\n\nUna vez generada la prefactura, el pedido quedará bloqueado y no podrás modificarlo."))return
@@ -128,8 +136,6 @@ async function prepareOrder(){
    await persistOrder();
    currentOrderItems=cart.map(x=>({...x}));
    saveLockedOrder();
-   cart=[];
-   localStorage.removeItem(CART_KEY);
    updateCount();
    render();
    document.getElementById("overlay").style.display="none";
@@ -159,7 +165,7 @@ async function persistOrder(){
  sessionStorage.setItem('rpc_saved_order_number',order);
 }
 function renderInvoice(){const c=loadCustomer();const items=currentOrderItems;document.getElementById("invoiceNo").textContent="Orden #"+currentOrderNumber();document.getElementById("invoiceDate").textContent=new Date().toLocaleString("es-CU");document.getElementById("invoiceCustomer").textContent=c.name||"No indicado";document.getElementById("invoicePhone").textContent=c.phone||"No indicado";document.getElementById("invoiceRows").innerHTML=items.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${x.qty}</td><td>${fmt(x.precio)}</td><td>${fmt(x.precio*x.qty)}</td></tr>`).join("");document.getElementById("invoiceTotal").textContent="Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0))}
-function finishCurrentOrder(){clearLockedOrder();currentOrderItems=[];sessionStorage.removeItem('rpc_current_order');sessionStorage.removeItem('rpc_saved_order_id');sessionStorage.removeItem('rpc_saved_order_number');document.getElementById('invoiceOverlay').style.display='none';updateCount();render()}
+function finishCurrentOrder(){clearLockedOrder();currentOrderItems=[];cart=[];localStorage.removeItem(CART_KEY);sessionStorage.removeItem('rpc_current_order');sessionStorage.removeItem('rpc_saved_order_id');sessionStorage.removeItem('rpc_saved_order_number');document.getElementById('invoiceOverlay').style.display='none';updateCount();render()}
 function closeInvoice(){finishCurrentOrder()}
 function printInvoice(){window.print()}
 function sendWhatsApp(){if(!currentOrderItems.length){alert("No hay una orden pendiente de enviar.");return}saveCustomer();const c=loadCustomer(),order=currentOrderNumber(),items=currentOrderItems;let msg=`Hola, quiero hacer un pedido en RPC COMERCIALIZADORA.%0A%0AORDEN: ${encodeURIComponent(order)}%0A`;items.forEach(x=>{msg+=`• ${encodeURIComponent(x.nombre)} — ${x.qty} ud. — ${encodeURIComponent(fmt(x.precio*x.qty))}%0A`});msg+=`%0A${encodeURIComponent("Total estimado: "+fmt(items.reduce((s,x)=>s+Number(x.precio||0)*Number(x.qty||0),0)))}%0A`;if(c.name)msg+=encodeURIComponent("Nombre: "+c.name)+"%0A";if(c.phone)msg+=encodeURIComponent("Teléfono: "+c.phone)+"%0A";if(c.note)msg+=encodeURIComponent("Comentario: "+c.note)+"%0A";const waUrl="https://wa.me/"+WHATSAPP+"?text="+msg;sessionStorage.setItem("rpc_return_from_whatsapp_v1","1");window.location.href=waUrl}
