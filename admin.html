@@ -131,7 +131,6 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
       </div>
     </div>
   </section>
-  </section>
 </section>
 </main>
 
@@ -199,7 +198,7 @@ async function showAdmin(user){
  document.getElementById('loginView').classList.add('hidden');document.getElementById('adminView').classList.remove('hidden');
  document.getElementById('topActions').innerHTML='<span class="small">Administrador</span>';
  const lastSection=localStorage.getItem('rpc_admin_last_section');
- showAdminSection(lastSection==='productsSection'||lastSection==='ordersSection'?lastSection:'menu',false);
+ showAdminSection(lastSection==='productsSection'||lastSection==='ordersSection'||lastSection==='inventorySection'?lastSection:'menu',false);
 }
 async function login(){
  hideMsg('loginMsg');const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
@@ -221,7 +220,7 @@ function showAdminSection(section, remember=true){
  orders.classList.toggle('hidden',section!=='ordersSection');
  inventory.classList.toggle('hidden',section!=='inventorySection');
  if(remember){
-   if(section==='productsSection' || section==='ordersSection') localStorage.setItem('rpc_admin_last_section',section);
+   if(section==='productsSection' || section==='ordersSection' || section==='inventorySection') localStorage.setItem('rpc_admin_last_section',section);
    else if(section==='menu') localStorage.removeItem('rpc_admin_last_section');
  }
  if(section==='productsSection') loadProducts();
