@@ -467,7 +467,24 @@ async function saveProduct(e){
 async function deleteProduct(id){
  const p=products.find(x=>Number(x.id)===Number(id));if(!p)return;
  if(!confirm('¿Eliminar definitivamente “'+p.nombre+'”?\n\nEsta acción no se puede deshacer.'))return;
- const {error}=await db.from(TABLE).delete().eq('id',id);if(error){showMsg('mainMsg','No se pudo eliminar: '+error.message,'err');return;}showMsg('mainMsg','Producto eliminado.','ok');await loadProducts();
+ // Guardamos la ruta de Storage antes de borrar el registro. El helper solo acepta
+ // rutas pertenecientes a nuestro bucket, por lo que una URL externa no se toca.
+ const photoPath=storagePathFromPublicUrl(p.foto_url||'');
+ const {error}=await db.from(TABLE).delete().eq('id',id);
+ if(error){showMsg('mainMsg','No se pudo eliminar: '+error.message,'err');return;}
+ // El producto ya fue eliminado correctamente; ahora limpiamos su foto de Storage.
+ // Si falla, el producto no se restaura, pero avisamos para que quede constancia.
+ if(photoPath){
+   const {error:photoError}=await db.storage.from(PHOTO_BUCKET).remove([photoPath]);
+   if(photoError){
+     console.warn('Producto eliminado, pero no se pudo eliminar su foto de Storage:',photoError.message);
+     showMsg('mainMsg','Producto eliminado, pero no se pudo borrar su foto del almacenamiento.','err');
+     await loadProducts();
+     return;
+   }
+ }
+ showMsg('mainMsg','Producto y foto eliminados correctamente.','ok');
+ await loadProducts();
 }
 
 
