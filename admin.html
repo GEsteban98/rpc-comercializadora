@@ -17,6 +17,8 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
 .invCountRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.invCountInput{width:100%;background:#0d0d0d;color:#fff;border:1px solid #555;border-radius:9px;padding:12px;font-size:18px;font-weight:800}
 .invSave{min-width:92px}.invState{font-size:11px;color:#999;min-height:16px}.progressBar{height:10px;background:#252525;border-radius:99px;overflow:hidden;margin-top:9px}.progressFill{height:100%;background:#20b958;width:0%;transition:width .2s}
 @media(max-width:650px){.row{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.products{grid-template-columns:1fr}.top{padding-left:12px;padding-right:12px}.wrap{padding:12px}.modalBox{margin:0;border-radius:0;min-height:100vh;border-left:0;border-right:0}}
+
+.bizMenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}.bizCard{background:#171717;border:1px solid #2d2d2d;border-radius:12px;padding:15px;text-align:left;color:#fff;min-height:110px}.bizCard b{display:block;font-size:17px;margin-bottom:6px}.bizCard small{color:#999;line-height:1.4}.bizSection .sectionHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.bizTableWrap{overflow:auto;border:1px solid #2b2b2b;border-radius:10px}.bizTable{width:100%;border-collapse:collapse;min-width:650px}.bizTable th,.bizTable td{padding:10px;border-bottom:1px solid #292929;text-align:left;font-size:12px}.bizTable th{color:#aaa;background:#101010}.bizKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.bizNote{border:1px solid #4a3b19;background:#17140d;color:#ddd;border-radius:10px;padding:12px;font-size:13px;line-height:1.45}.lockedAction{opacity:.65}.bizItemGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bizMini{background:#111;border:1px solid #2b2b2b;border-radius:10px;padding:12px}.bizMini b{font-size:20px;display:block}.bizMini small{color:#999}@media(max-width:800px){.bizMenu{grid-template-columns:repeat(2,minmax(0,1fr))}.bizKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.bizMenu,.bizItemGrid{grid-template-columns:1fr}.bizKpis{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -49,6 +51,14 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
       <button class="btn primary" style="flex:1;min-width:150px" onclick="showAdminSection('productsSection')">🛠️ Productos</button>
       <button class="btn" style="flex:1;min-width:150px" onclick="showAdminSection('ordersSection')">📦 Pedidos</button>
       <button class="btn" style="flex:1;min-width:150px" onclick="showAdminSection('inventorySection')">📊 Inventario</button>
+    </div>
+    <div class="bizMenu">
+      <button class="bizCard" onclick="showAdminSection('salesSection')"><b>💰 Ventas</b><small>Registra ventas del punto físico y ventas online.</small></button>
+      <button class="bizCard" onclick="showAdminSection('purchasesSection')"><b>🚚 Compras</b><small>Entradas de mercancía y costos reales.</small></button>
+      <button class="bizCard" onclick="showAdminSection('expensesSection')"><b>💸 Gastos</b><small>Registra gastos operativos del negocio.</small></button>
+      <button class="bizCard" onclick="showAdminSection('closingSection')"><b>📅 Cierre diario</b><small>Controla ventas, pagos, gastos y diferencias.</small></button>
+      <button class="bizCard" onclick="showAdminSection('reportsSection')"><b>📈 Reportes</b><small>Consulta resultados y movimientos del negocio.</small></button>
+      <button class="bizCard" onclick="showAdminSection('testsSection')"><b>🧪 Pruebas del sistema</b><small>Comprueba conexiones y permisos sin tocar el inventario real.</small></button>
     </div>
   </div>
 
@@ -112,7 +122,22 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
         <div class="card" style="margin:12px 0 0;background:#101010">
           <div class="toolbar">
             <input id="inventorySearch" placeholder="🔎 Buscar por nombre o código" oninput="renderInventory()">
-            <select id="inventoryCategoria" onchange="updateInventorySubcategories();renderInventory()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px">
+            <select id="inventoryCategoria" onchange="
+function bizSectionIds(){return ['productsSection','ordersSection','inventorySection','salesSection','purchasesSection','expensesSection','closingSection','reportsSection','testsSection','menu'];}
+function setBizHeader(section){const titles={salesSection:'💰 Ventas',purchasesSection:'🚚 Compras',expensesSection:'💸 Gastos',closingSection:'📅 Cierre diario',reportsSection:'📈 Reportes',testsSection:'🧪 Pruebas'}; if(section==='salesSection'){loadSales();} if(section==='purchasesSection'){loadPurchases();} if(section==='expensesSection'){loadExpenses();} if(section==='closingSection'){const d=document.getElementById('closingDate');if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);loadClosing();} if(section==='reportsSection')loadReports(); if(section==='testsSection')runSystemTests();}
+async function inventoryConfirmedState(){const {data,error}=await db.from('configuracion_inventario').select('inventario_inicial_confirmado').eq('id',true).maybeSingle();if(error)throw error;return Boolean(data?.inventario_inicial_confirmado);}
+async function applyBusinessLocks(){try{const ok=await inventoryConfirmedState();['salesLock','purchaseLock'].forEach(id=>document.getElementById(id)?.classList.toggle('hidden',ok));['salesForm','purchaseForm'].forEach(id=>document.getElementById(id)?.classList.toggle('hidden',!ok));}catch(e){document.getElementById('salesLock')?.classList.remove('hidden');document.getElementById('purchaseLock')?.classList.remove('hidden');document.getElementById('salesForm')?.classList.add('hidden');document.getElementById('purchaseForm')?.classList.add('hidden');}}
+async function loadSales(){const box=document.getElementById('salesList');if(!box)return;await applyBusinessLocks();const {data,error}=await db.from('ventas').select('id,fecha,canal,cliente_nombre,total,forma_pago,estado').order('fecha',{ascending:false}).limit(30);if(error){box.innerHTML='';showMsg('salesMsg','No se pudieron leer las ventas: '+error.message,'err');return;}if(!data?.length){box.innerHTML='<div class="muted">No hay ventas registradas todavía.</div>';return;}box.innerHTML='<div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Canal</th><th>Cliente</th><th>Pago</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+data.map(v=>`<tr><td>${esc(new Date(v.fecha).toLocaleString('es-CU'))}</td><td>${esc(v.canal)}</td><td>${esc(v.cliente_nombre||'—')}</td><td>${esc(v.forma_pago||'—')}</td><td>${money(v.total)}</td><td>${esc(v.estado)}</td></tr>`).join('')+'</tbody></table></div>';}
+async function registerSale(){showMsg('salesMsg','La interfaz está preparada, pero la operación real se habilita solo después de confirmar el inventario físico.','err');}
+async function loadPurchases(){const box=document.getElementById('purchasesList');if(!box)return;await applyBusinessLocks();const {data,error}=await db.from('compras').select('id,fecha,proveedor,numero_documento,total,forma_pago,estado').order('fecha',{ascending:false}).limit(30);if(error){box.innerHTML='';showMsg('purchaseMsg','No se pudieron leer las compras: '+error.message,'err');return;}if(!data?.length){box.innerHTML='<div class="muted">No hay compras registradas todavía.</div>';return;}box.innerHTML='<div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Documento</th><th>Pago</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+data.map(v=>`<tr><td>${esc(new Date(v.fecha).toLocaleString('es-CU'))}</td><td>${esc(v.proveedor||'—')}</td><td>${esc(v.numero_documento||'—')}</td><td>${esc(v.forma_pago||'—')}</td><td>${money(v.total)}</td><td>${esc(v.estado)}</td></tr>`).join('')+'</tbody></table></div>';}
+async function registerPurchase(){showMsg('purchaseMsg','La interfaz está preparada, pero la operación real se habilita solo después de confirmar el inventario físico.','err');}
+async function loadExpenses(){const box=document.getElementById('expensesList');if(!box)return;const {data,error}=await db.from('gastos').select('id,fecha,categoria,descripcion,importe,forma_pago,estado').order('fecha',{ascending:false}).limit(30);if(error){box.innerHTML='';showMsg('expenseMsg','No se pudieron leer los gastos: '+error.message,'err');return;}if(!data?.length){box.innerHTML='<div class="muted">No hay gastos registrados todavía.</div>';return;}box.innerHTML='<div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Pago</th><th>Importe</th><th>Estado</th></tr></thead><tbody>'+data.map(v=>`<tr><td>${esc(new Date(v.fecha).toLocaleString('es-CU'))}</td><td>${esc(v.categoria)}</td><td>${esc(v.descripcion||'—')}</td><td>${esc(v.forma_pago||'—')}</td><td>${money(v.importe)}</td><td>${esc(v.estado)}</td></tr>`).join('')+'</tbody></table></div>';}
+async function registerExpense(){const cat=document.getElementById('expenseCategory').value,amt=Number(document.getElementById('expenseAmount').value||0);if(!amt||amt<0){showMsg('expenseMsg','Indica un importe válido.','err');return;}const {data:{user}}=await db.auth.getUser();const {error}=await db.from('gastos').insert({categoria:cat,descripcion:document.getElementById('expenseDescription').value.trim()||null,importe:amt,forma_pago:document.getElementById('expensePayment').value,observaciones:document.getElementById('expenseObs').value.trim()||null,creado_por:user?.id||null});if(error){showMsg('expenseMsg','No se pudo registrar el gasto: '+error.message,'err');return;}showMsg('expenseMsg','Gasto registrado correctamente.','ok');document.getElementById('expenseAmount').value='';document.getElementById('expenseDescription').value='';document.getElementById('expenseObs').value='';await loadExpenses();}
+async function loadClosing(){const box=document.getElementById('closingData');if(!box)return;const date=document.getElementById('closingDate').value||new Date().toISOString().slice(0,10);const start=date+'T00:00:00',end=date+'T23:59:59.999';const [{data:sales,error:se},{data:expenses,error:ee},{data:close,error:ce}]=await Promise.all([db.from('ventas').select('canal,total,forma_pago,estado').gte('fecha',start).lte('fecha',end),db.from('gastos').select('importe,estado').gte('fecha',start).lte('fecha',end),db.from('cierres_diarios').select('*').eq('fecha',date).maybeSingle()]);if(se||ee||ce){showMsg('closingMsg','No se pudo completar el cierre: '+(se||ee||ce).message,'err');return;}const valid=(sales||[]).filter(x=>x.estado==='Completada');const total=valid.reduce((a,x)=>a+Number(x.total||0),0),pos=valid.filter(x=>x.canal==='Punto de venta').reduce((a,x)=>a+Number(x.total||0),0),online=valid.filter(x=>x.canal==='Online').reduce((a,x)=>a+Number(x.total||0),0),gastos=(expenses||[]).filter(x=>x.estado==='Registrado').reduce((a,x)=>a+Number(x.importe||0),0);box.innerHTML=`<div class="bizKpis"><div class="bizMini"><b>${money(total)}</b><small>Ventas</small></div><div class="bizMini"><b>${money(pos)}</b><small>Punto de venta</small></div><div class="bizMini"><b>${money(online)}</b><small>Online</small></div><div class="bizMini"><b>${money(gastos)}</b><small>Gastos</small></div></div><div class="card" style="margin:12px 0 0;background:#101010"><b>Resultado del día: ${money(total-gastos)}</b><div class="muted" style="margin-top:5px">${close?`Cierre existente: ${esc(close.estado)}.`:'Todavía no existe un cierre guardado para esta fecha.'}</div></div>`;}
+async function loadReports(){const box=document.getElementById('reportKpis'),mov=document.getElementById('reportMovements');if(!box)return;const [{data:sales,error:se},{data:expenses,error:ee},{data:stock,error:pe}]=await Promise.all([db.from('ventas').select('total,estado'),db.from('gastos').select('importe,estado'),db.from(TABLE).select('id,cantidad,disponible')]);if(se||ee||pe){showMsg('reportsMsg','No se pudieron cargar los reportes: '+(se||ee||pe).message,'err');return;}const vt=(sales||[]).filter(x=>x.estado==='Completada').reduce((a,x)=>a+Number(x.total||0),0),gt=(expenses||[]).filter(x=>x.estado==='Registrado').reduce((a,x)=>a+Number(x.importe||0),0),units=(stock||[]).reduce((a,x)=>a+Number(x.cantidad||0),0),avail=(stock||[]).filter(x=>x.disponible).length;box.innerHTML=`<div class="bizMini"><b>${money(vt)}</b><small>Ventas acumuladas</small></div><div class="bizMini"><b>${money(gt)}</b><small>Gastos acumulados</small></div><div class="bizMini"><b>${units}</b><small>Unidades en sistema</small></div><div class="bizMini"><b>${avail}</b><small>Productos disponibles</small></div>`;mov.innerHTML='<div class="muted">Los reportes detallados por período se pueden ampliar después del arranque físico del inventario.</div>';}
+async function runSystemTests(){const box=document.getElementById('testsResult');if(!box)return;box.innerHTML='<div class="loading" style="grid-column:1/-1">Comprobando…</div>';const tests=[];try{const {data,error}=await db.from(TABLE).select('id',{count:'exact',head:true});tests.push(['PRODUCTOS','Lectura de catálogo',!error,error?.message||'OK']);}catch(e){tests.push(['PRODUCTOS','Lectura de catálogo',false,e.message]);}try{const {data,error}=await db.from('conteos_inventario').select('producto_id',{count:'exact',head:true});tests.push(['INVENTARIO','Lectura de conteos',!error,error?.message||'OK']);}catch(e){tests.push(['INVENTARIO','Lectura de conteos',false,e.message]);}try{const {data,error}=await db.from('configuracion_inventario').select('inventario_inicial_confirmado').eq('id',true).maybeSingle();tests.push(['CONFIGURACIÓN','Estado inicial',!error,error?.message||`Confirmado: ${Boolean(data?.inventario_inicial_confirmado)}`]);}catch(e){tests.push(['CONFIGURACIÓN','Estado inicial',false,e.message]);}try{const {data,error}=await db.from('gastos').select('id',{count:'exact',head:true});tests.push(['GASTOS','Permiso de lectura',!error,error?.message||'OK']);}catch(e){tests.push(['GASTOS','Permiso de lectura',false,e.message]);}box.innerHTML=tests.map(t=>`<div class="bizMini" style="border-color:${t[2]?'#276b40':'#8a3439'}"><b>${t[2]?'✅':'❌'} ${esc(t[0])}</b><small>${esc(t[1])}<br>${esc(t[3])}</small></div>`).join('');}
+
+updateInventorySubcategories();renderInventory()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px">
               <option value="">Todas las categorías</option><option>Carros</option><option>Motos</option><option>Bicicletas</option><option>Todo en un solo lugar</option>
             </select>
             <select id="inventorySubcategoria" onchange="renderInventory()" style="background:#0d0d0d;color:#fff;border:1px solid #3b3b3b;border-radius:9px;padding:11px 12px"><option value="">Todas las subcategorías</option></select>
@@ -131,6 +156,52 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
         <p id="inventoryLockedText" class="muted">El inventario físico ya está confirmado.</p>
       </div>
     </div>
+  </section>
+
+  <section id="salesSection" class="hidden bizSection">
+    <div class="card">
+      <div class="sectionHead"><div><h2 style="margin:0 0 5px">💰 Ventas</h2><p class="muted">Una sola venta para el punto físico y para las ventas online. Ambas descuentan del mismo inventario.</p></div><div class="actions"><button class="btn" onclick="showAdminSection('menu')">← Menú</button><button class="btn" onclick="showAdminSection('inventorySection')">📊 Inventario</button></div></div>
+      <div id="salesMsg" class="msg"></div>
+      <div id="salesLock" class="bizNote" style="margin-top:12px">🔒 <b>Registro protegido.</b><br>El inventario inicial todavía no está confirmado. Las ventas reales quedarán habilitadas después del conteo físico para evitar alterar cantidades antiguas.</div>
+      <div id="salesForm" class="hidden" style="margin-top:12px">
+        <div class="row"><div class="field"><label>Canal</label><select id="saleCanal"><option>Punto de venta</option><option>Online</option></select></div><div class="field"><label>Forma de pago</label><select id="salePago"><option value="Efectivo">Efectivo</option><option value="Transferencia">Transferencia</option><option value="Otro">Otro</option></select></div></div>
+        <div class="row"><div class="field"><label>Cliente</label><input id="saleCliente" placeholder="Nombre opcional"></div><div class="field"><label>Teléfono</label><input id="saleTelefono" placeholder="Opcional"></div></div>
+        <div class="field"><label>Producto ID</label><input id="saleProductoId" type="number" min="1" placeholder="ID del producto"></div>
+        <div class="row"><div class="field"><label>Cantidad</label><input id="saleCantidad" type="number" min="1" step="1" value="1"></div><div class="field"><label>Precio unitario CUP</label><input id="salePrecio" type="number" min="0" step="0.01"></div></div>
+        <div class="field"><label>Observaciones</label><textarea id="saleObs" placeholder="Opcional"></textarea></div>
+        <button class="btn primary" onclick="registerSale()">Registrar venta</button>
+      </div>
+      <div class="card" style="margin:12px 0 0;background:#101010"><h3 style="margin:0 0 8px">Ventas registradas</h3><div id="salesList"><div class="loading">Pulsa actualizar para consultar.</div></div></div>
+    </div>
+  </section>
+
+  <section id="purchasesSection" class="hidden bizSection">
+    <div class="card">
+      <div class="sectionHead"><div><h2 style="margin:0 0 5px">🚚 Compras / entradas</h2><p class="muted">Registra mercancía recibida y su costo unitario real. La entrada actualiza inventario y costo promedio.</p></div><div class="actions"><button class="btn" onclick="showAdminSection('menu')">← Menú</button><button class="btn" onclick="showAdminSection('inventorySection')">📊 Inventario</button></div></div>
+      <div id="purchaseMsg" class="msg"></div><div id="purchaseLock" class="bizNote" style="margin-top:12px">🔒 <b>Registro protegido.</b><br>Primero hay que confirmar el inventario físico inicial.</div>
+      <div id="purchaseForm" class="hidden" style="margin-top:12px"><div class="row"><div class="field"><label>Proveedor</label><input id="purchaseProvider"></div><div class="field"><label>Número de documento</label><input id="purchaseDoc"></div></div><div class="row"><div class="field"><label>Producto ID</label><input id="purchaseProductId" type="number" min="1"></div><div class="field"><label>Cantidad</label><input id="purchaseQty" type="number" min="1" step="1"></div></div><div class="row"><div class="field"><label>Costo unitario CUP</label><input id="purchaseCost" type="number" min="0" step="0.01"></div><div class="field"><label>Forma de pago</label><select id="purchasePayment"><option>Efectivo</option><option>Transferencia</option><option>Otro</option></select></div></div><div class="field"><label>Observaciones</label><textarea id="purchaseObs"></textarea></div><button class="btn primary" onclick="registerPurchase()">Registrar entrada</button></div>
+      <div class="card" style="margin:12px 0 0;background:#101010"><h3 style="margin:0 0 8px">Compras registradas</h3><div id="purchasesList"><div class="loading">Pulsa actualizar para consultar.</div></div></div>
+    </div>
+  </section>
+
+  <section id="expensesSection" class="hidden bizSection">
+    <div class="card">
+      <div class="sectionHead"><div><h2 style="margin:0 0 5px">💸 Gastos</h2><p class="muted">Registra gastos operativos sin mezclarlos con la compra de mercancía.</p></div><div class="actions"><button class="btn" onclick="showAdminSection('menu')">← Menú</button><button class="btn" onclick="loadExpenses()">↻ Actualizar</button></div></div>
+      <div id="expenseMsg" class="msg"></div><div class="row"><div class="field"><label>Categoría *</label><select id="expenseCategory"><option>Transporte</option><option>Alquiler</option><option>Electricidad</option><option>Telefonía</option><option>Personal</option><option>Publicidad</option><option>Otros</option></select></div><div class="field"><label>Importe CUP *</label><input id="expenseAmount" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>Forma de pago</label><select id="expensePayment"><option>Efectivo</option><option>Transferencia</option><option>Otro</option></select></div><div class="field"><label>Descripción</label><input id="expenseDescription"></div></div><div class="field"><label>Observaciones</label><textarea id="expenseObs"></textarea></div><button class="btn primary" onclick="registerExpense()">Registrar gasto</button>
+      <div class="card" style="margin:12px 0 0;background:#101010"><h3 style="margin:0 0 8px">Últimos gastos</h3><div id="expensesList"><div class="loading">Cargando…</div></div></div>
+    </div>
+  </section>
+
+  <section id="closingSection" class="hidden bizSection">
+    <div class="card"><div class="sectionHead"><div><h2 style="margin:0 0 5px">📅 Cierre diario</h2><p class="muted">Resume el día por canal y forma de pago. El cierre no cambia el inventario.</p></div><div class="actions"><button class="btn" onclick="showAdminSection('menu')">← Menú</button><button class="btn" onclick="loadClosing()">↻ Actualizar</button></div></div><div id="closingMsg" class="msg"></div><div class="field"><label>Fecha</label><input id="closingDate" type="date" onchange="loadClosing()"></div><div id="closingData"><div class="loading">Selecciona una fecha.</div></div></div>
+  </section>
+
+  <section id="reportsSection" class="hidden bizSection">
+    <div class="card"><div class="sectionHead"><div><h2 style="margin:0 0 5px">📈 Reportes</h2><p class="muted">Vista resumida para conocer ventas, gastos e inventario.</p></div><div class="actions"><button class="btn" onclick="showAdminSection('menu')">← Menú</button><button class="btn" onclick="loadReports()">↻ Actualizar</button></div></div><div id="reportsMsg" class="msg"></div><div id="reportKpis" class="bizKpis" style="margin-top:12px"></div><div class="card" style="margin:12px 0 0;background:#101010"><h3 style="margin:0 0 8px">Movimientos recientes</h3><div id="reportMovements"><div class="loading">Cargando…</div></div></div></div>
+  </section>
+
+  <section id="testsSection" class="hidden bizSection">
+    <div class="card"><div class="sectionHead"><div><h2 style="margin:0 0 5px">🧪 Pruebas del sistema</h2><p class="muted">Comprobaciones seguras antes de poner en marcha las operaciones reales.</p></div><button class="btn" onclick="showAdminSection('menu')">← Menú</button></div><div class="bizNote" style="margin-top:12px">Estas pruebas son de lectura. No crean ventas, compras, gastos ni movimientos de inventario.</div><div id="testsResult" class="bizItemGrid" style="margin-top:12px"></div><button class="btn primary" style="margin-top:12px" onclick="runSystemTests()">Ejecutar comprobaciones</button></div>
   </section>
 </section>
 </main>
@@ -199,7 +270,7 @@ async function showAdmin(user){
  document.getElementById('loginView').classList.add('hidden');document.getElementById('adminView').classList.remove('hidden');
  document.getElementById('topActions').innerHTML='<span class="small">Administrador</span>';
  const lastSection=localStorage.getItem('rpc_admin_last_section');
- showAdminSection(lastSection==='productsSection'||lastSection==='ordersSection'||lastSection==='inventorySection'?lastSection:'menu',false);
+ showAdminSection(['productsSection','ordersSection','inventorySection','salesSection','purchasesSection','expensesSection','closingSection','reportsSection','testsSection'].includes(lastSection)?lastSection:'menu',false);
 }
 async function login(){
  hideMsg('loginMsg');const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
@@ -212,21 +283,18 @@ function goCatalog(){location.href='catalogo.html';}
 function goHome(){location.href='index.html';}
 
 function showAdminSection(section, remember=true){
+ const ids=['productsSection','ordersSection','inventorySection','salesSection','purchasesSection','expensesSection','closingSection','reportsSection','testsSection'];
  const menu=document.getElementById('adminMenu');
- const products=document.getElementById('productsSection');
- const orders=document.getElementById('ordersSection');
- const inventory=document.getElementById('inventorySection');
- menu.classList.toggle('hidden',section!=='menu');
- products.classList.toggle('hidden',section!=='productsSection');
- orders.classList.toggle('hidden',section!=='ordersSection');
- inventory.classList.toggle('hidden',section!=='inventorySection');
+ if(menu)menu.classList.toggle('hidden',section!=='menu');
+ ids.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('hidden',section!==id);});
  if(remember){
-   if(section==='productsSection' || section==='ordersSection' || section==='inventorySection') localStorage.setItem('rpc_admin_last_section',section);
+   if(ids.includes(section)) localStorage.setItem('rpc_admin_last_section',section);
    else if(section==='menu') localStorage.removeItem('rpc_admin_last_section');
  }
  if(section==='productsSection') loadProducts();
  if(section==='ordersSection') loadOrders();
  if(section==='inventorySection') loadInventory();
+ if(['salesSection','purchasesSection','expensesSection','closingSection','reportsSection','testsSection'].includes(section)) setBizHeader(section);
  window.scrollTo({top:0,behavior:'smooth'});
 }
 
