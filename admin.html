@@ -88,6 +88,7 @@ body{min-height:100vh}.wrap{max-width:1100px;margin:auto;padding:16px}.top{posit
     </div>
     <div id="orders" style="margin-top:12px"><div class="loading">Cargando pedidos…</div></div>
   </div>
+  </section>
 
   <section id="inventorySection" class="hidden">
     <div class="card" style="margin-top:0">
@@ -629,28 +630,46 @@ let inventoryProducts=[],inventoryCounts={},inventoryInitialConfirmed=false;
 
 async function loadInventory(){
   const status=document.getElementById('inventoryStatus'),tools=document.getElementById('inventoryCountTools'),locked=document.getElementById('inventoryLocked'),confirmBox=document.getElementById('inventoryConfirmBox');
-  hideMsg('inventoryMsg'); status.innerHTML='<div class="loading">Consultando estado del inventario…</div>'; tools.classList.add('hidden'); locked.classList.add('hidden'); confirmBox.classList.add('hidden');
+  hideMsg('inventoryMsg');
+  status.innerHTML='<div class="loading">Cargando inventario…</div>';
+  tools.classList.add('hidden'); locked.classList.add('hidden'); confirmBox.classList.add('hidden');
   try{
-    const [{data:cfg,error:ce},{data:prods,error:pe},{data:counts,error:xe}]=await Promise.all([
-      db.from('configuracion_inventario').select('inventario_inicial_confirmado,fecha_inventario_inicial').eq('id',true).maybeSingle(),
-      db.from(TABLE).select('id,nombre,categoria,subcategoria,codigo,cantidad').order('id',{ascending:true}),
-      db.from('conteos_inventario').select('producto_id,cantidad_contada,contado_en').order('producto_id',{ascending:true})
-    ]);
-    if(ce)throw ce;if(pe)throw pe;if(xe)throw xe;
-    inventoryInitialConfirmed=Boolean(cfg?.inventario_inicial_confirmado); inventoryProducts=prods||[]; inventoryCounts={};
-    (counts||[]).forEach(c=>inventoryCounts[String(c.producto_id)]=c);
+    // Primero cargamos PRODUCTOS. Así la pantalla nunca queda vacía si falla una consulta secundaria.
+    const {data:prods,error:pe}=await db.from(TABLE).select('id,nombre,categoria,subcategoria,codigo,cantidad').order('id',{ascending:true});
+    if(pe) throw pe;
+    inventoryProducts=prods||[];
+    inventoryCounts={};
+
+    // El estado de confirmación y los conteos se leen por separado.
+    const {data:cfg,error:ce}=await db.from('configuracion_inventario').select('inventario_inicial_confirmado,fecha_inventario_inicial').eq('id',true).maybeSingle();
+    if(ce){
+      showMsg('inventoryMsg','Los productos cargaron, pero no se pudo leer el estado del inventario: '+ce.message,'err');
+    }
+    const {data:counts,error:xe}=await db.from('conteos_inventario').select('producto_id,cantidad_contada,contado_en').order('producto_id',{ascending:true});
+    if(xe){
+      showMsg('inventoryMsg','Los productos cargaron, pero no se pudieron leer los conteos: '+xe.message,'err');
+    } else {
+      (counts||[]).forEach(c=>inventoryCounts[String(c.producto_id)]=c);
+    }
+
+    inventoryInitialConfirmed=Boolean(cfg?.inventario_inicial_confirmado);
     if(inventoryInitialConfirmed){
       const when=cfg?.fecha_inventario_inicial?new Date(cfg.fecha_inventario_inicial).toLocaleString('es-CU'):'';
       status.innerHTML=`<div style="display:flex;gap:10px"><div style="font-size:25px">🔒</div><div><b>Inventario inicial confirmado</b><div class="muted" style="margin-top:4px">Confirmado${when?' el '+esc(when):''}. Las existencias se modificarán mediante ventas, compras, devoluciones y ajustes.</div></div></div>`;
       document.getElementById('inventoryLockedText').textContent='El conteo inicial está bloqueado y ya no se puede modificar desde este módulo.';
-      locked.classList.remove('hidden'); return;
+      locked.classList.remove('hidden');
+      return;
     }
-    tools.classList.remove('hidden'); renderInventory(); refreshInventoryProgress();
+
+    tools.classList.remove('hidden');
+    renderInventory();
     status.innerHTML='<b>📋 Inventario inicial pendiente</b><div class="muted" style="margin-top:4px">Cuenta físicamente cada producto. La cantidad del sistema es solo una referencia.</div><div class="progressBar"><div id="inventoryProgressFill" class="progressFill"></div></div><div id="inventoryProgressText" class="small" style="margin-top:6px"></div>';
     refreshInventoryProgress();
-  }catch(err){status.innerHTML='';showMsg('inventoryMsg','No se pudo cargar el inventario: '+(err?.message||err),'err');}
+  }catch(err){
+    status.innerHTML='';
+    showMsg('inventoryMsg','No se pudo cargar la lista de productos del inventario: '+(err?.message||err),'err');
+  }
 }
-
 function updateInventorySubcategories(){
   const cat=document.getElementById('inventoryCategoria')?.value||'',sub=document.getElementById('inventorySubcategoria'); if(!sub)return;
   const current=sub.value,opts=cat==='Todo en un solo lugar'?['Alimentación','Ferretería','Hogar','Otros']:['Mecánica','Eléctrico','Accesorios','Gomas'];
