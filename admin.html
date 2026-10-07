@@ -334,7 +334,7 @@ async function registerExpense(){
   try{
     const {data:{user}}=await db.auth.getUser();
     if(!user||user.id!==ADMIN_UID)throw new Error('La sesión de administrador no es válida.');
-    const payload={fecha:localDateISO(),categoria,descripcion,importe:amount,forma_pago:payment,estado:'Registrado',observaciones,creado_por:user.id};
+    const payload={fecha:localDateISO(),categoria:category,descripcion,importe:amount,forma_pago:payment,estado:'Registrado',observaciones,creado_por:user.id};
     const {error}=await db.from('gastos').insert(payload);
     if(error)throw error;
     document.getElementById('expenseAmount').value='';
@@ -437,14 +437,14 @@ async function loadReports(){
     const t=await getDailyBusinessTotals(today);
     const [{count:productCount,error:pe},{data:movements,error:me},{data:cfg,error:ce}]=await Promise.all([
       db.from(TABLE).select('*',{count:'exact',head:true}),
-      db.from('movimientos_inventario').select('id,fecha,tipo,cantidad,producto_id,motivo,notas').order('fecha',{ascending:false}).limit(15),
+      db.from('movimientos_inventario').select('id,fecha,tipo,cantidad,producto_id,motivo').order('fecha',{ascending:false}).limit(15),
       db.from('configuracion_inventario').select('inventario_inicial_confirmado').eq('id',true).maybeSingle()
     ]);
     if(pe)throw pe;if(me)throw me;if(ce)throw ce;
     kpi.innerHTML=bizKpi('Ventas hoy',money(t.total))+bizKpi('Gastos hoy',money(t.expenseTotal))+bizKpi('Neto hoy',money(t.total-t.expenseTotal))+bizKpi('Productos',String(productCount??0));
     if(!movements?.length){box.innerHTML='<div class="muted">No hay movimientos de inventario registrados todavía.</div>';}
     else{
-      box.innerHTML='<div class="bizNote" style="margin-bottom:10px">Inventario inicial: <b>'+((cfg?.inventario_inicial_confirmado)?'confirmado':'pendiente')+'</b></div><div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cantidad</th><th>Motivo</th></tr></thead><tbody>'+movements.map(m=>`<tr><td>${esc(new Date(m.fecha).toLocaleString('es-CU'))}</td><td>${esc(m.tipo||'—')}</td><td>ID ${esc(m.producto_id)}</td><td>${esc(m.cantidad)}</td><td>${esc(m.motivo||m.notas||'—')}</td></tr>`).join('')+'</tbody></table></div>';
+      box.innerHTML='<div class="bizNote" style="margin-bottom:10px">Inventario inicial: <b>'+((cfg?.inventario_inicial_confirmado)?'confirmado':'pendiente')+'</b></div><div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cantidad</th><th>Motivo</th></tr></thead><tbody>'+movements.map(m=>`<tr><td>${esc(new Date(m.fecha).toLocaleString('es-CU'))}</td><td>${esc(m.tipo||'—')}</td><td>ID ${esc(m.producto_id)}</td><td>${esc(m.cantidad)}</td><td>${esc(m.motivo||'—')}</td></tr>`).join('')+'</tbody></table></div>';
     }
   }catch(err){kpi.innerHTML='';box.innerHTML='';showMsg('reportsMsg','No se pudieron cargar los reportes: '+(err?.message||err),'err');}
 }
