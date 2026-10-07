@@ -302,6 +302,170 @@ async function registerSale(){if(!(await inventoryConfirmedState())){showMsg('sa
 async function loadPurchases(){const box=document.getElementById('purchasesList');if(!box)return;await applyBusinessLocks();const {data,error}=await db.from('compras').select('id,fecha,proveedor,numero_documento,total,forma_pago,estado').order('fecha',{ascending:false}).limit(30);if(error){box.innerHTML='';showMsg('purchaseMsg','No se pudieron leer las compras: '+error.message,'err');return;}if(!data?.length){box.innerHTML='<div class="muted">No hay compras registradas todavía.</div>';return;}box.innerHTML='<div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Documento</th><th>Pago</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+data.map(v=>`<tr><td>${esc(new Date(v.fecha).toLocaleString('es-CU'))}</td><td>${esc(v.proveedor||'—')}</td><td>${esc(v.numero_documento||'—')}</td><td>${esc(v.forma_pago||'—')}</td><td>${money(v.total)}</td><td>${esc(v.estado)}</td></tr>`).join('')+'</tbody></table></div>';}
 async function testPurchase(){const id=Number(document.getElementById('purchaseProductId').value||0),qty=Number(document.getElementById('purchaseQty').value||0),cost=Number(document.getElementById('purchaseCost').value||0);if(!id||qty<1||cost<0){showMsg('purchaseMsg','Selecciona un producto, indica cantidad y costo unitario.','err');return;}const o=document.getElementById('purchaseProductId').selectedOptions[0];const nombre=o?o.textContent:'Producto';showMsg('purchaseMsg',`🧪 <b>Prueba correcta.</b> ${esc(nombre)}<br>${qty} unidad(es) × ${money(cost)} = <b>${money(qty*cost)}</b>.<br><span class="muted">No se guardó nada ni se modificó el inventario.</span>`,'ok');}
 async function registerPurchase(){if(!(await inventoryConfirmedState())){showMsg('purchaseMsg','🔒 La entrada real seguirá bloqueada hasta confirmar el inventario físico inicial. Usa “Probar entrada” para comprobar el formulario.','err');return;}showMsg('purchaseMsg','La operación real está preparada para conectarse al RPC de compras.','ok');}
+
+// =========================
+// GASTOS / CIERRE / REPORTES / PRUEBAS
+// =========================
+function localDateISO(){
+  const d=new Date();
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function dateLabel(v){
+  if(!v)return '—';
+  const d=new Date(v.includes('T')?v:v+'T00:00:00');
+  return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('es-CU');
+}
+function bizKpi(label,value,small){
+  return `<div class="bizMini"><b>${esc(value)}</b><small>${esc(label)}${small?' · '+esc(small):''}</small></div>`;
+}
+
+async function registerExpense(){
+  hideMsg('expenseMsg');
+  const category=document.getElementById('expenseCategory')?.value||'';
+  const amount=Number(document.getElementById('expenseAmount')?.value||0);
+  const payment=document.getElementById('expensePayment')?.value||'Efectivo';
+  const description=document.getElementById('expenseDescription')?.value.trim()||null;
+  const observations=document.getElementById('expenseObs')?.value.trim()||null;
+  if(!category){showMsg('expenseMsg','Selecciona una categoría.','err');return;}
+  if(!Number.isFinite(amount)||amount<=0){showMsg('expenseMsg','Indica un importe mayor que 0 CUP.','err');return;}
+  const btn=document.querySelector('#expensesSection button.btn.primary');
+  if(btn){btn.disabled=true;btn.textContent='Registrando…';}
+  try{
+    const {data:{user}}=await db.auth.getUser();
+    if(!user||user.id!==ADMIN_UID)throw new Error('La sesión de administrador no es válida.');
+    const payload={fecha:localDateISO(),categoria,descripcion,importe:amount,forma_pago:payment,estado:'Registrado',observaciones,creado_por:user.id};
+    const {error}=await db.from('gastos').insert(payload);
+    if(error)throw error;
+    document.getElementById('expenseAmount').value='';
+    document.getElementById('expenseDescription').value='';
+    document.getElementById('expenseObs').value='';
+    showMsg('expenseMsg',`Gasto registrado correctamente: ${money(amount)}.`,'ok');
+    await loadExpenses();
+  }catch(err){
+    showMsg('expenseMsg','No se pudo registrar el gasto: '+(err?.message||err),'err');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Registrar gasto';}
+  }
+}
+
+async function loadExpenses(){
+  const box=document.getElementById('expensesList');if(!box)return;
+  box.innerHTML='<div class="loading">Cargando gastos…</div>';
+  try{
+    const {data,error}=await db.from('gastos').select('id,fecha,categoria,descripcion,importe,forma_pago,estado,observaciones').order('fecha',{ascending:false}).order('id',{ascending:false}).limit(30);
+    if(error)throw error;
+    if(!data?.length){box.innerHTML='<div class="muted">No hay gastos registrados todavía.</div>';return;}
+    box.innerHTML='<div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Pago</th><th>Importe</th><th>Estado</th></tr></thead><tbody>'+data.map(g=>`<tr><td>${esc(dateLabel(g.fecha))}</td><td>${esc(g.categoria||'—')}</td><td>${esc(g.descripcion||'—')}</td><td>${esc(g.forma_pago||'—')}</td><td>${money(g.importe)}</td><td>${esc(g.estado||'—')}</td></tr>`).join('')+'</tbody></table></div>';
+  }catch(err){
+    box.innerHTML='';showMsg('expenseMsg','No se pudieron cargar los gastos: '+(err?.message||err),'err');
+  }
+}
+
+function nextDateISO(date){const d=new Date(date+'T00:00:00');d.setDate(d.getDate()+1);return d.toISOString().slice(0,10);}
+
+async function getDailyBusinessTotals(date){
+  const [{data:sales,error:se},{data:expenses,error:ee}]=await Promise.all([
+    db.from('ventas').select('id,fecha,canal,total,forma_pago,estado').gte('fecha',date+'T00:00:00').lt('fecha',date+'T23:59:59.999').order('fecha',{ascending:true}),
+    db.from('gastos').select('id,fecha,importe,estado').gte('fecha',date).lt('fecha',nextDateISO(date)).order('id',{ascending:true})
+  ]);
+  if(se)throw se;if(ee)throw ee;
+  const validSales=(sales||[]).filter(v=>v.estado==='Completada');
+  const validExpenses=(expenses||[]).filter(g=>g.estado==='Registrado');
+  const sum=list=>list.reduce((a,x)=>a+Number(x.total??x.importe??0),0);
+  const byChannel=(name)=>validSales.filter(v=>v.canal===name).reduce((a,v)=>a+Number(v.total||0),0);
+  const byPayment=(name)=>validSales.filter(v=>v.forma_pago===name).reduce((a,v)=>a+Number(v.total||0),0);
+  const total=sum(validSales),point=byChannel('Punto de venta'),online=byChannel('Online'),cash=byPayment('Efectivo'),transfer=byPayment('Transferencia');
+  const other=total-cash-transfer,expenseTotal=sum(validExpenses);
+  return {sales:validSales,expenses:validExpenses,total,point,online,cash,transfer,other,expenseTotal};
+}
+
+async function loadClosing(){
+  const box=document.getElementById('closingData');if(!box)return;
+  hideMsg('closingMsg');
+  const date=document.getElementById('closingDate')?.value||localDateISO();
+  box.innerHTML='<div class="loading">Calculando cierre…</div>';
+  try{
+    const t=await getDailyBusinessTotals(date);
+    const {data:existing,error:ce}=await db.from('cierres_diarios').select('id,fecha,ventas_total,ventas_punto_venta,ventas_online,efectivo,transferencia,otros_pagos,gastos_total,diferencia,estado,observaciones').eq('fecha',date).maybeSingle();
+    if(ce)throw ce;
+    box.innerHTML=`<div class="bizKpis" style="margin-top:12px">
+      ${bizKpi('Ventas del día',money(t.total))}${bizKpi('Punto de venta',money(t.point))}${bizKpi('Ventas online',money(t.online))}${bizKpi('Gastos',money(t.expenseTotal))}
+    </div>
+    <div class="card" style="margin:12px 0 0;background:#101010">
+      <div class="bizTableWrap"><table class="bizTable"><tbody>
+      <tr><th>Ventas totales</th><td>${money(t.total)}</td></tr>
+      <tr><th>Efectivo</th><td>${money(t.cash)}</td></tr>
+      <tr><th>Transferencia</th><td>${money(t.transfer)}</td></tr>
+      <tr><th>Otros pagos</th><td>${money(t.other)}</td></tr>
+      <tr><th>Gastos registrados</th><td>${money(t.expenseTotal)}</td></tr>
+      <tr><th>Neto del día</th><td><b>${money(t.total-t.expenseTotal)}</b></td></tr>
+      </tbody></table></div>
+      ${existing?`<div class="bizNote" style="margin-top:10px">Ya existe un cierre para esta fecha. Estado: <b>${esc(existing.estado||'—')}</b>. Guardar nuevamente actualizará el resumen calculado.</div>`:''}
+    </div>`;
+    box.dataset.daily=JSON.stringify({date,...t});
+  }catch(err){box.innerHTML='';showMsg('closingMsg','No se pudo cargar el cierre: '+(err?.message||err),'err');}
+}
+
+async function saveClosing(){
+  hideMsg('closingMsg');
+  const date=document.getElementById('closingDate')?.value||localDateISO();
+  const btn=document.querySelector('#closingSection button.btn.primary');
+  if(btn){btn.disabled=true;btn.textContent='Guardando…';}
+  try{
+    const {data:{user}}=await db.auth.getUser();
+    if(!user||user.id!==ADMIN_UID)throw new Error('La sesión de administrador no es válida.');
+    const t=await getDailyBusinessTotals(date);
+    const payload={fecha:date,ventas_total:t.total,ventas_punto_venta:t.point,ventas_online:t.online,efectivo:t.cash,transferencia:t.transfer,otros_pagos:t.other,gastos_total:t.expenseTotal,diferencia:0,estado:'Cerrado',observaciones:'Cierre calculado a partir de ventas completadas y gastos registrados.',cerrado_por:user.id,cerrado_en:new Date().toISOString()};
+    const {data:existing,error:qe}=await db.from('cierres_diarios').select('id').eq('fecha',date).maybeSingle();
+    if(qe)throw qe;
+    let error;
+    if(existing){({error}=await db.from('cierres_diarios').update(payload).eq('id',existing.id));}
+    else{({error}=await db.from('cierres_diarios').insert(payload));}
+    if(error)throw error;
+    showMsg('closingMsg',`Cierre del ${dateLabel(date)} guardado correctamente.`,'ok');
+    await loadClosing();
+  }catch(err){showMsg('closingMsg','No se pudo guardar el cierre: '+(err?.message||err),'err');}
+  finally{if(btn){btn.disabled=false;btn.textContent='💾 Guardar cierre del día';}}
+}
+
+async function loadReports(){
+  const kpi=document.getElementById('reportKpis'),box=document.getElementById('reportMovements');if(!kpi||!box)return;
+  hideMsg('reportsMsg');kpi.innerHTML='<div class="loading">Calculando…</div>';box.innerHTML='<div class="loading">Cargando…</div>';
+  try{
+    const today=localDateISO();
+    const t=await getDailyBusinessTotals(today);
+    const [{count:productCount,error:pe},{data:movements,error:me},{data:cfg,error:ce}]=await Promise.all([
+      db.from(TABLE).select('*',{count:'exact',head:true}),
+      db.from('movimientos_inventario').select('id,fecha,tipo,cantidad,producto_id,motivo,notas').order('fecha',{ascending:false}).limit(15),
+      db.from('configuracion_inventario').select('inventario_inicial_confirmado').eq('id',true).maybeSingle()
+    ]);
+    if(pe)throw pe;if(me)throw me;if(ce)throw ce;
+    kpi.innerHTML=bizKpi('Ventas hoy',money(t.total))+bizKpi('Gastos hoy',money(t.expenseTotal))+bizKpi('Neto hoy',money(t.total-t.expenseTotal))+bizKpi('Productos',String(productCount??0));
+    if(!movements?.length){box.innerHTML='<div class="muted">No hay movimientos de inventario registrados todavía.</div>';}
+    else{
+      box.innerHTML='<div class="bizNote" style="margin-bottom:10px">Inventario inicial: <b>'+((cfg?.inventario_inicial_confirmado)?'confirmado':'pendiente')+'</b></div><div class="bizTableWrap"><table class="bizTable"><thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cantidad</th><th>Motivo</th></tr></thead><tbody>'+movements.map(m=>`<tr><td>${esc(new Date(m.fecha).toLocaleString('es-CU'))}</td><td>${esc(m.tipo||'—')}</td><td>ID ${esc(m.producto_id)}</td><td>${esc(m.cantidad)}</td><td>${esc(m.motivo||m.notas||'—')}</td></tr>`).join('')+'</tbody></table></div>';
+    }
+  }catch(err){kpi.innerHTML='';box.innerHTML='';showMsg('reportsMsg','No se pudieron cargar los reportes: '+(err?.message||err),'err');}
+}
+
+async function runSystemTests(){
+  const box=document.getElementById('testsResult');if(!box)return;
+  box.innerHTML='<div class="loading">Ejecutando comprobaciones…</div>';
+  const tests=[
+    ['Conexión a PRODUCTOS',async()=>{const {count,error}=await db.from(TABLE).select('id',{count:'exact',head:true});if(error)throw error;return `${count??0} productos accesibles`; }],
+    ['Ventas',async()=>{const {count,error}=await db.from('ventas').select('id',{count:'exact',head:true});if(error)throw error;return `${count??0} registros accesibles`; }],
+    ['Compras',async()=>{const {count,error}=await db.from('compras').select('id',{count:'exact',head:true});if(error)throw error;return `${count??0} registros accesibles`; }],
+    ['Gastos',async()=>{const {count,error}=await db.from('gastos').select('id',{count:'exact',head:true});if(error)throw error;return `${count??0} registros accesibles`; }],
+    ['Cierres diarios',async()=>{const {count,error}=await db.from('cierres_diarios').select('id',{count:'exact',head:true});if(error)throw error;return `${count??0} registros accesibles`; }],
+    ['Movimientos de inventario',async()=>{const {count,error}=await db.from('movimientos_inventario').select('id',{count:'exact',head:true});if(error)throw error;return `${count??0} registros accesibles`; }],
+    ['Configuración de inventario',async()=>{const {data,error}=await db.from('configuracion_inventario').select('inventario_inicial_confirmado').eq('id',true).maybeSingle();if(error)throw error;return data?.inventario_inicial_confirmado?'Inventario inicial confirmado':'Inventario inicial pendiente'; }]
+  ];
+  const results=[];
+  for(const [name,fn] of tests){try{results.push({name,ok:true,text:await fn()});}catch(err){results.push({name,ok:false,text:err?.message||String(err)});}}
+  box.innerHTML=results.map(r=>`<div class="bizMini" style="border-color:${r.ok?'#276b40':'#8a3439'}"><b>${r.ok?'✓':'✕'} ${esc(r.name)}</b><small>${esc(r.text)}</small></div>`).join('');
+}
+
 async function init(){
  const {data:{session}}=await db.auth.getSession();
  if(session) showAdmin(session.user); else showLogin();
