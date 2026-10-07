@@ -334,7 +334,7 @@ async function registerExpense(){
   try{
     const {data:{user}}=await db.auth.getUser();
     if(!user||user.id!==ADMIN_UID)throw new Error('La sesión de administrador no es válida.');
-    const payload={fecha:localDateISO(),categoria:category,descripcion,importe:amount,forma_pago:payment,estado:'Registrado',observaciones,creado_por:user.id};
+    const payload={fecha:localDateISO(),categoria:category,descripcion:description,importe:amount,forma_pago:payment,estado:'Registrado',observaciones,creado_por:user.id};
     const {error}=await db.from('gastos').insert(payload);
     if(error)throw error;
     document.getElementById('expenseAmount').value='';
